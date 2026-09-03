@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">aegis-lews</string>
+    <string name="title_activity_main">aegis-lews</string>
+    <string name="package_name">aegis.lews.v2</string>
+    <string name="custom_url_scheme">aegis.lews.v2</string>
+</resources>
