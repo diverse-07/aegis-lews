@@ -1,5 +1,9 @@
 import axios from "axios"
-const api = axios.create({ baseURL: "http://localhost:8000/api", timeout: 6000 })
+
+const api = axios.create({ 
+  baseURL: "https://aegis-lews.onrender.com/api", 
+  timeout: 10000 
+})
 
 export async function getWeather(lat, lng) {
   try { return (await api.get(`/weather?lat=${lat}&lng=${lng}`)).data }
