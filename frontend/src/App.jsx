@@ -52,7 +52,7 @@ const SENSORS = [
 
 const INDIA_BOUNDS = [[6.0, 68.0], [38.0, 98.0]]
 const NER_CENTER = [25.5, 92.8]
-const TERRAIN_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+const TERRAIN_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
 const SAT_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 const SAT_LABELS_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
 
@@ -218,8 +218,8 @@ export default function App() {
               <div style={{height:400,width:"100%"}}>
                 <MapContainer center={NER_CENTER} zoom={7} minZoom={5} maxZoom={16} maxBounds={INDIA_BOUNDS} maxBoundsViscosity={1.0} style={{height:"100%",width:"100%"}}>
                   <ZoomWatcher onZoomChange={setCurrentZoom}/>
-                  <TileLayer url={mapType==="satellite"?SAT_URL:TERRAIN_URL} subdomains={mapType==="satellite"?"":"abcd"} maxZoom={19} />
-                  {mapType==="satellite" && <TileLayer url={SAT_LABELS_URL} maxZoom={19} opacity={0.85} />}
+                  <TileLayer key={`dash-tile-${mapType}`} url={mapType==="satellite"?SAT_URL:TERRAIN_URL} maxZoom={19} keepBuffer={12} updateWhenIdle={false} />
+                  {mapType==="satellite" && <TileLayer key="dash-labels" url={SAT_LABELS_URL} maxZoom={19} opacity={0.85} keepBuffer={12} />}
                   {ZONES.map(z=>{
                     const c=getColor(z.score)
                     return <Polygon key={z.id} positions={z.coords} pathOptions={{color:c,fillColor:c,fillOpacity:0.50,weight:1.5}}>
@@ -290,8 +290,8 @@ export default function App() {
             <div style={{height:580,width:"100%"}}>
               <MapContainer center={NER_CENTER} zoom={7} minZoom={5} maxZoom={16} maxBounds={INDIA_BOUNDS} maxBoundsViscosity={1.0} style={{height:"100%",width:"100%"}}>
                 <ZoomWatcher onZoomChange={setCurrentZoom}/>
-                <TileLayer url={mapType==="satellite"?SAT_URL:TERRAIN_URL} subdomains={mapType==="satellite"?"":"abcd"} maxZoom={19} />
-                {mapType==="satellite" && <TileLayer url={SAT_LABELS_URL} maxZoom={19} opacity={0.85} />}
+                <TileLayer key={`risk-tile-${mapType}`} url={mapType==="satellite"?SAT_URL:TERRAIN_URL} maxZoom={19} keepBuffer={12} updateWhenIdle={false} />
+                {mapType==="satellite" && <TileLayer key="risk-labels" url={SAT_LABELS_URL} maxZoom={19} opacity={0.85} keepBuffer={12} />}
                 {ZONES.map(z=>{
                   const sim=Math.min(Math.round(z.score*(rainfallMultiplier>1?1+(rainfallMultiplier-1)*0.6:rainfallMultiplier)),99)
                   const c=getColor(sim)
