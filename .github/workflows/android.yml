@@ -35,12 +35,22 @@ jobs:
     - name: Sync Capacitor
       working-directory: ./frontend
       run: |
-        chmod +x android/gradlew
-        npx cap sync android
+        npx cap sync android > cap_sync.log 2>&1 || true
+        cat cap_sync.log
 
     - name: Build APK
       working-directory: ./frontend/android
-      run: ./gradlew assembleDebug
+      run: |
+        ./gradlew assembleDebug > gradle_build.log 2>&1 || true
+        cat gradle_build.log
+
+    - name: Commit Logs for Debugging
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add ./frontend/cap_sync.log ./frontend/android/gradle_build.log || true
+        git commit -m "Upload debug logs" || true
+        git push || true
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
