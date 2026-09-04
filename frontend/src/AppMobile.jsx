@@ -386,8 +386,10 @@ function SafetyCheckView({ t, onBack }) {
           </div>
         </div>
         <div className="card-body">
-          <button className="btn btn-primary" onClick={handleGPS} disabled={loading} style={{ width: "100%", marginBottom: "12px" }}>
-            <Icons.Gps size={18} color="#ffffff" />
+          <button className={`btn btn-primary ${loading ? "btn-scanning" : ""}`} onClick={handleGPS} disabled={loading} style={{ width: "100%", marginBottom: "12px" }}>
+            <span className={loading ? "gps-spin-icon" : ""} style={{ display: "inline-flex" }}>
+              <Icons.Gps size={18} color="#ffffff" />
+            </span>
             <span>{loading ? "Locking Satellite GPS..." : "Scan Real GPS Coordinates"}</span>
           </button>
 
@@ -1091,6 +1093,7 @@ export default function AppMobile() {
         {/* Quick Language Switcher Pill */}
         <button 
           onClick={() => setShowLangModal(true)} 
+          className="lang-pill-btn"
           style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "var(--navy)", fontSize: "10px", fontWeight: "800", padding: "4px 8px", borderRadius: "10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
           title="Change Language"
         >
@@ -1106,33 +1109,35 @@ export default function AppMobile() {
 
       {/* Main View Area */}
       <div className="app-content">
-        {activeView === "home" && (
-          <HomeView t={t} onOpenSection={setActiveView} onOpenSOS={() => setShowSOSModal(true)} />
-        )}
-        {activeView === "safety" && (
-          <SafetyCheckView t={t} onBack={() => setActiveView("home")} />
-        )}
-        {activeView === "predictions" && (
-          <PredictionsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
-        )}
-        {activeView === "map" && (
-          <MapView t={t} onBack={() => setActiveView("home")} />
-        )}
-        {activeView === "sensors" && (
-          <SensorsView t={t} onBack={() => setActiveView("home")} />
-        )}
-        {activeView === "analytics" && (
-          <AnalyticsView t={t} onBack={() => setActiveView("home")} />
-        )}
-        {activeView === "simulation" && (
-          <SimulatorView t={t} onBack={() => setActiveView("home")} />
-        )}
-        {activeView === "alerts" && (
-          <AlertsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
-        )}
-        {activeView === "report" && (
-          <ReportView t={t} onBack={() => setActiveView("home")} />
-        )}
+        <div key={activeView} className="view-enter-anim">
+          {activeView === "home" && (
+            <HomeView t={t} onOpenSection={setActiveView} onOpenSOS={() => setShowSOSModal(true)} />
+          )}
+          {activeView === "safety" && (
+            <SafetyCheckView t={t} onBack={() => setActiveView("home")} />
+          )}
+          {activeView === "predictions" && (
+            <PredictionsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
+          )}
+          {activeView === "map" && (
+            <MapView t={t} onBack={() => setActiveView("home")} />
+          )}
+          {activeView === "sensors" && (
+            <SensorsView t={t} onBack={() => setActiveView("home")} />
+          )}
+          {activeView === "analytics" && (
+            <AnalyticsView t={t} onBack={() => setActiveView("home")} />
+          )}
+          {activeView === "simulation" && (
+            <SimulatorView t={t} onBack={() => setActiveView("home")} />
+          )}
+          {activeView === "alerts" && (
+            <AlertsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
+          )}
+          {activeView === "report" && (
+            <ReportView t={t} onBack={() => setActiveView("home")} />
+          )}
+        </div>
       </div>
 
       {/* FLOATING TRANSLUCENT DOCK WITH VECTOR ICONS */}

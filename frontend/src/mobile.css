@@ -1,3 +1,20 @@
+/* VIEW ENTER ANIMATION */
+.view-enter-anim {
+  animation: mobileScreenGlide 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mobileScreenGlide {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ======================================================
    AEGIS LEWS — Mobile App CSS (Light/White Smartphone Theme)
    Designed for Android APK & Mobile Web
@@ -165,26 +182,9 @@ html, body, #root {
   margin-bottom: 24px;
 }
 
-.lang-btn {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  padding: 10px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--darknavy);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
 
-.lang-btn.selected {
-  background: #eff6ff;
-  border-color: var(--navy);
-  box-shadow: 0 0 0 1.5px var(--navy);
-}
+
+
 
 .lang-btn .lang-flag { font-size: 20px; }
 .lang-btn .lang-native { font-size: 12px; font-weight: 700; color: var(--darknavy); }
@@ -373,12 +373,9 @@ html, body, #root {
   justify-content: space-between;
 }
 
-.app-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px 10px;
-  margin-bottom: 20px;
-}
+
+
+
 
 .app-tile {
   display: flex;
@@ -389,11 +386,12 @@ html, body, #root {
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: transform 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-tile:active {
-  transform: scale(0.92);
+  transform: scale(0.86);
 }
 
 .app-squircle {
@@ -403,10 +401,29 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5);
   position: relative;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+.app-tile:active .app-squircle {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  filter: brightness(0.92);
+  transform: scale(0.94);
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 10px;
+  margin-bottom: 20px;
+}
+
+
+
+
+
+
 
 .app-squircle.ai { background: linear-gradient(135deg, #6366f1, #4338ca); color: #fff; }
 .app-squircle.map { background: linear-gradient(135deg, #10b981, #047857); color: #fff; }
@@ -472,31 +489,11 @@ html, body, #root {
   box-shadow: 0 16px 36px rgba(11, 37, 69, 0.14), 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.dock-btn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  gap: 2px;
-}
 
-.dock-btn:active {
-  transform: scale(0.92);
-}
 
-.dock-btn.active {
-  background: #eff6ff;
-  color: var(--navy);
-  transform: translateY(-2px);
-}
+
+
+
 
 .dock-icon {
   width: 22px;
@@ -843,12 +840,7 @@ html, body, #root {
 }
 
 /* SAFETY RESULT */
-.safety-card {
-  border-radius: 16px;
-  padding: 16px;
-  text-align: center;
-  margin-top: 12px;
-}
+
 
 .safety-card.safe { background: #dcfce7; border: 1px solid #86efac; }
 .safety-card.caution { background: #fef3c7; border: 1px solid #fde047; }
@@ -897,28 +889,9 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 /* MODAL SHEET */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 2000;
-  display: flex;
-  align-items: flex-end;
-}
 
-.modal-sheet {
-  width: 100%;
-  background: #ffffff;
-  border-radius: 28px 28px 0 0;
-  padding: 20px 18px;
-  padding-bottom: max(24px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border);
-  max-height: 88vh;
-  overflow-y: auto;
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
-}
+
+
 
 .modal-handle {
   width: 40px;
@@ -1016,3 +989,165 @@ input[type=range]::-webkit-slider-thumb {
   outline: none;
 }
 .form-input:focus { border-color: var(--navy); }
+
+
+.dock-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dock-btn:active {
+  transform: scale(0.86);
+}
+
+.dock-btn.active {
+  background: #eff6ff;
+  color: var(--navy);
+  transform: translateY(-2px);
+  animation: dockPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dockPop {
+  0% { transform: scale(0.9) translateY(0); }
+  50% { transform: scale(1.1) translateY(-3px); }
+  100% { transform: scale(1) translateY(-2px); }
+}
+
+
+/* QUICK LANG PILL BUTTON */
+.lang-pill-btn {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.lang-pill-btn:active {
+  transform: scale(0.9) !important;
+}
+
+/* LANGUAGE SELECTION ANIMATION */
+.lang-btn {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--darknavy);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lang-btn:active {
+  transform: scale(0.92);
+}
+
+.lang-btn.selected {
+  background: #eff6ff;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 1.5px var(--navy), 0 4px 12px rgba(30, 64, 175, 0.12);
+  animation: langSelectPulse 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes langSelectPulse {
+  0% { transform: scale(0.94); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* MODAL SHEET OPEN TRANSITIONS */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  animation: modalFadeIn 0.22s ease-out forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-sheet {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 28px 28px 0 0;
+  padding: 20px 18px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
+  animation: sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+@keyframes sheetSlideUp {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* SAFETY GPS BUTTON RADAR & CARD POP */
+.btn-scanning {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #1e40af, #3b82f6, #1e40af) !important;
+  background-size: 200% 100% !important;
+  animation: scanShimmer 1.5s infinite linear !important;
+}
+
+@keyframes scanShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.gps-spin-icon {
+  animation: radarSpin 1.8s infinite linear;
+}
+
+@keyframes radarSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.safety-card {
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  margin-top: 12px;
+  animation: cardPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
