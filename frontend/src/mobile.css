@@ -1151,3 +1151,241 @@ input[type=range]::-webkit-slider-thumb {
     transform: translateY(0) scale(1);
   }
 }
+
+
+
+/* ======================================================
+   GOVERNMENT OF INDIA (MDoNER) OFFICIAL STYLING
+   ====================================================== */
+.tiranga-strip {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.33%, #ffffff 33.33%, #ffffff 66.66%, #138808 66.66%, #138808 100%);
+  flex-shrink: 0;
+}
+
+.govt-masthead-bar {
+  background: #0f172a;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 14px;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.govt-masthead-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.govt-masthead-right {
+  color: #c59b27;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.app-header-container {
+  flex-shrink: 0;
+  z-index: 50;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.app-header-logos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.app-header-emblem {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.app-header-divider {
+  width: 1px;
+  height: 22px;
+  background: #cbd5e1;
+}
+
+.app-header-govt {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1;
+}
+
+.app-header-gold-tag {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+  letter-spacing: 0.2px;
+}
+
+/* MDoNER OFFICIAL MINISTRY CARD */
+.govt-ministry-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid #085dad;
+  border-radius: 16px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.govt-ministry-logo {
+  height: 32px;
+  max-width: 110px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.govt-ministry-divider {
+  width: 1px;
+  height: 28px;
+  background: #e2e8f0;
+}
+
+.govt-ministry-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.govt-ministry-badge {
+  font-size: 8px;
+  font-weight: 800;
+  color: #085dad;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.govt-ministry-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--darknavy);
+  line-height: 1.2;
+}
+
+.govt-ministry-detail {
+  font-size: 9px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* GOVERNMENT PORTAL FOOTER */
+.govt-official-footer {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 12px;
+  margin-top: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+  color: #475569;
+}
+
+.govt-footer-emblems {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.govt-footer-emblem {
+  height: 34px;
+  width: auto;
+}
+
+.govt-footer-aegis {
+  height: 28px;
+  width: 28px;
+  border-radius: 50%;
+  border: 1.5px solid #c59b27;
+}
+
+.govt-footer-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--darknavy);
+  margin-bottom: 2px;
+}
+
+.govt-footer-sub {
+  font-size: 9.5px;
+  color: var(--navy);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.govt-footer-portal-info {
+  font-size: 9px;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.govt-footer-copyright {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 6px;
+}
+
+/* SPLASH SCREEN GOVERNMENT ENHANCEMENTS */
+.splash-govt-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.splash-emblem {
+  height: 48px;
+  width: auto;
+  margin-bottom: 4px;
+}
+
+.splash-govt-name {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1e3a8a;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.splash-mdoner-banner {
+  background: #ffffff;
+  padding: 4px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;
+  max-width: 220px;
+}
+
+.splash-mdoner-banner img {
+  height: 24px;
+  width: auto;
+  display: block;
+}

@@ -240,17 +240,29 @@ function SplashScreen({ onEnter }) {
 
   return (
     <div className="splash-screen">
+      {/* Top National Tricolor Strip */}
+      <div className="tiranga-strip" style={{ position: "absolute", top: 0, left: 0, right: 0 }} />
+
+      {/* Official Government of India & MDoNER Header */}
+      <div className="splash-govt-top">
+        <img src="/emblem_of_india.svg" alt="Emblem of India" className="splash-emblem" />
+        <div className="splash-govt-name">भारत सरकार &bull; GOVERNMENT OF INDIA</div>
+        <div className="splash-mdoner-banner">
+          <img src="/mdoner_logo.svg" alt="MDoNER" />
+        </div>
+      </div>
+
       <div className="splash-logo-wrap">
         <div className="splash-logo-ring" />
         <div className="splash-logo-ring2" />
         <img src="/logo.jpg" alt="AEGIS" className="splash-logo" />
       </div>
-      <div className="splash-badge">TEAM AEGIS · SIH 2026</div>
+      <div className="splash-badge">TEAM AEGIS · SIH 2026 INITIATIVE</div>
       <h1 className="splash-title">NER <span>Landslide</span><br />Early Warning System</h1>
-      <p className="splash-subtitle">MDoNER · Govt. of India · Geotechnical AI</p>
+      <p className="splash-subtitle">Ministry of Development of North Eastern Region (MDoNER) &bull; GSI &bull; NDMA</p>
 
-      <p className="splash-lang-title">Choose Language / ভাষা নিৰ্বাচন কৰক</p>
-      <div className="splash-lang-grid" style={{ maxHeight: "240px", overflowY: "auto", padding: "4px" }}>
+      <p className="splash-lang-title">Choose Official Language / ভাষা নিৰ্বাচন কৰক</p>
+      <div className="splash-lang-grid" style={{ maxHeight: "200px", overflowY: "auto", padding: "4px" }}>
         {LANGUAGES.map(lang => (
           <button key={lang.code} className={`lang-btn ${selectedLang === lang.code ? "selected" : ""}`} onClick={() => setSelectedLang(lang.code)}>
             <span className="lang-native">{lang.native}</span>
@@ -259,7 +271,7 @@ function SplashScreen({ onEnter }) {
         ))}
       </div>
       <button className="splash-enter-btn" onClick={() => onEnter(selectedLang)}>
-        <span>Launch Application</span>
+        <span>Enter Sovereign Portal</span>
         <span>→</span>
       </button>
     </div>
@@ -496,6 +508,17 @@ function HomeView({ t, onOpenSection, onOpenSOS }) {
         </div>
       </div>
 
+      {/* Official MDoNER Authority Banner */}
+      <div className="govt-ministry-card">
+        <img src="/mdoner_logo.svg" alt="MDoNER" className="govt-ministry-logo" />
+        <div className="govt-ministry-divider" />
+        <div className="govt-ministry-info">
+          <div className="govt-ministry-badge">MDoNER &bull; GOVT. OF INDIA</div>
+          <div className="govt-ministry-name">Ministry of Development of North Eastern Region</div>
+          <div className="govt-ministry-detail">NLSM GSI Hazard Early Warning Architecture</div>
+        </div>
+      </div>
+
       {/* Modern Squircle App Grid */}
       <div className="home-section-title">
         <span>System Modules</span>
@@ -571,6 +594,24 @@ function HomeView({ t, onOpenSection, onOpenSOS }) {
         <Icons.Alerts size={18} color="#ffffff" />
         <span>{t.emergency}</span>
       </button>
+
+      {/* Government of India Official Portal Footer */}
+      <div className="govt-official-footer">
+        <div className="govt-footer-emblems">
+          <img src="/emblem_of_india.svg" alt="Emblem of India" className="govt-footer-emblem" />
+          <div style={{ width: "1px", height: "26px", background: "#cbd5e1" }} />
+          <img src="/logo.jpg" alt="Team AEGIS" className="govt-footer-aegis" />
+        </div>
+        <div className="govt-footer-title">पूर्वोत्तर क्षेत्र विकास मंत्रालय &bull; MDoNER</div>
+        <div className="govt-footer-sub">Ministry of Development of North Eastern Region &bull; Government of India</div>
+        <div className="govt-footer-portal-info">
+          North Eastern Regional Landslide Early Warning System (NER-LEWS 2.0)<br/>
+          Smart India Hackathon 2026 Initiative &bull; Integrated with GSI NLSM &amp; IMD AWS
+        </div>
+        <div className="govt-footer-copyright">
+          Government of India &copy; {new Date().getFullYear()} &bull; Developed by Team AEGIS
+        </div>
+      </div>
     </div>
   )
 }
@@ -1082,15 +1123,37 @@ export default function AppMobile() {
 
   return (
     <div className="app-shell">
-      {/* Top Header */}
-      <div className="app-header">
-        <img src="/logo.jpg" alt="AEGIS" className="app-header-logo" />
-        <div className="app-header-text">
-          <div className="app-header-title">NER-LEWS 2.0</div>
-          <div className="app-header-sub">MDoNER · Govt. of India</div>
+      {/* Top Header with National Masthead */}
+      <div className="app-header-container">
+        <div className="tiranga-strip" />
+        <div className="govt-masthead-bar">
+          <div className="govt-masthead-left">
+            <span>भारत सरकार</span>
+            <span>&bull;</span>
+            <span>GOVT. OF INDIA</span>
+          </div>
+          <div className="govt-masthead-right">
+            MDoNER · GSI · NDMA
+          </div>
         </div>
 
-        {/* Quick Language Switcher Pill */}
+        <div className="app-header">
+          <div className="app-header-logos">
+            <img src="/emblem_of_india.svg" alt="Emblem of India" className="app-header-emblem" />
+            <div className="app-header-divider" />
+            <img src="/logo.jpg" alt="AEGIS" className="app-header-logo" />
+          </div>
+
+          <div className="app-header-text">
+            <div className="app-header-govt">MDoNER &bull; GOVT. OF INDIA</div>
+            <div className="app-header-title">
+              <span>NER-LEWS 2.0</span>
+              <span className="app-header-gold-tag">सत्यमेव जयते</span>
+            </div>
+            <div className="app-header-sub">Ministry of Development of North Eastern Region</div>
+          </div>
+
+          {/* Quick Language Switcher Pill */}
         <button 
           onClick={() => setShowLangModal(true)} 
           className="lang-pill-btn"
@@ -1106,6 +1169,7 @@ export default function AppMobile() {
           <span className="live-label">{istTime}</span>
         </div>
       </div>
+    </div>
 
       {/* Main View Area */}
       <div className="app-content">
@@ -1162,7 +1226,7 @@ export default function AppMobile() {
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
             <div className="modal-title" style={{ color: "var(--darknavy)", fontSize: "16px" }}>🌐 Select Language / ভাষা নিৰ্বাচন</div>
-            <div className="modal-subtitle">12 Official North-Eastern &amp; National Languages</div>
+            <div className="modal-subtitle">Ministry of Development of North Eastern Region (MDoNER) · 12 Scheduled Languages</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", maxHeight: "320px", overflowY: "auto", padding: "4px" }}>
               {LANGUAGES.map(item => (
                 <button 
@@ -1188,8 +1252,8 @@ export default function AppMobile() {
         <div className="modal-overlay" onClick={() => setShowSOSModal(false)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
-            <div className="modal-title">Emergency Dispatch Order</div>
-            <div className="modal-subtitle">Jaintia Hills NH-44 Sector 8 · Multi-Channel Dispatch</div>
+            <div className="modal-title">Sovereign Emergency Dispatch Order</div>
+            <div className="modal-subtitle">MDoNER Disaster Risk Reduction Wing · Jaintia Hills NH-44 Sector 8</div>
             {[
               { key: "sms", icon: "📱", label: "Priority SMS Cell Broadcast (1,250 residents)" },
               { key: "ndrf", icon: "🪖", label: "Mobilize NDRF 1st Bn Guwahati & SDRF" },
