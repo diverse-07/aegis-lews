@@ -1,14 +1,25 @@
-// Smart router — shows Desktop dashboard on PC, Mobile app on phone/tablet
+// Smart device router
+// Desktop → /desktop.html (government NIC-style portal)
+// Mobile/Tablet/APK → React mobile app
+
 import React from "react"
 import AppMobile from "./AppMobile"
-import AppDesktop from "./AppDesktop"
 
 function isMobile() {
-  // Check screen width AND touch support
-  return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  return (
+    window.innerWidth <= 900 ||
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+  )
 }
 
 export default function App() {
-  const [mobile] = React.useState(isMobile)
-  return mobile ? <AppMobile /> : <AppDesktop />
+  const mobile = isMobile()
+
+  if (!mobile) {
+    // Redirect desktop users to the standalone government portal HTML
+    window.location.replace("/desktop.html")
+    return null
+  }
+
+  return <AppMobile />
 }
