@@ -5,6 +5,38 @@ import "./mobile.css"
 
 // --- PROFESSIONAL VECTOR ICONS (NO CARTOON EMOJIS) ---
 const Icons = {
+  User: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  MoreVertical: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="1.8" fill={color}/>
+      <circle cx="12" cy="5" r="1.8" fill={color}/>
+      <circle cx="12" cy="19" r="1.8" fill={color}/>
+    </svg>
+  ),
+  Sparkles: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+    </svg>
+  ),
+  HelpCircle: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  ),
+  LogOut: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  ),
   Bluetooth: ({ size = 20, color = "currentColor" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
@@ -265,6 +297,21 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 // 1. SPLASH SCREEN
 function SplashScreen({ onEnter }) {
   const [selectedLang, setSelectedLang] = useState("en")
+  const [step, setStep] = useState(1) // 1: Language, 2: Citizen Details
+  const [citizenName, setCitizenName] = useState("Harsh Pathak")
+  const [citizenState, setCitizenState] = useState("Meghalaya")
+  const [citizenDistrict, setCitizenDistrict] = useState("Jaintia Hills (NH-44)")
+
+  const handleFinish = () => {
+    const userPayload = {
+      name: citizenName.trim() || "Citizen Volunteer",
+      state: citizenState,
+      district: citizenDistrict,
+      id: "NER-NODE-" + Math.floor(1000 + Math.random() * 9000),
+      registeredAt: new Date().toLocaleDateString("en-IN")
+    }
+    onEnter(selectedLang, userPayload)
+  }
 
   return (
     <div className="splash-screen">
@@ -289,19 +336,76 @@ function SplashScreen({ onEnter }) {
       <h1 className="splash-title">NER <span>Landslide</span><br />Early Warning System</h1>
       <p className="splash-subtitle">Ministry of Development of North Eastern Region (MDoNER) &bull; GSI &bull; NDMA</p>
 
-      <p className="splash-lang-title">Choose Official Language / ভাষা নিৰ্বাচন কৰক</p>
-      <div className="splash-lang-grid" style={{ maxHeight: "200px", overflowY: "auto", padding: "4px" }}>
-        {LANGUAGES.map(lang => (
-          <button key={lang.code} className={`lang-btn ${selectedLang === lang.code ? "selected" : ""}`} onClick={() => setSelectedLang(lang.code)}>
-            <span className="lang-native">{lang.native}</span>
-            <span className="lang-english">{lang.region}</span>
+      {step === 1 ? (
+        <>
+          <p className="splash-lang-title">Step 1 of 2: Choose Language / ভাষা নিৰ্বাচন কৰক</p>
+          <div className="splash-lang-grid" style={{ maxHeight: "190px", overflowY: "auto", padding: "4px" }}>
+            {LANGUAGES.map(lang => (
+              <button key={lang.code} className={`lang-btn ${selectedLang === lang.code ? "selected" : ""}`} onClick={() => setSelectedLang(lang.code)}>
+                <span className="lang-native">{lang.native}</span>
+                <span className="lang-english">{lang.region}</span>
+              </button>
+            ))}
+          </div>
+          <button className="splash-enter-btn" onClick={() => setStep(2)}>
+            <span>Continue to Citizen Setup</span>
+            <span>→</span>
           </button>
-        ))}
-      </div>
-      <button className="splash-enter-btn" onClick={() => onEnter(selectedLang)}>
-        <span>Enter Sovereign Portal</span>
-        <span>→</span>
-      </button>
+        </>
+      ) : (
+        <div className="onboarding-step-card">
+          <p className="splash-lang-title" style={{ marginTop: 0 }}>Step 2 of 2: One-Time Citizen Setup</p>
+          <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "12px", textAlign: "center" }}>
+            Stored in local device storage. No database needed. You will never be asked again on this phone.
+          </p>
+
+          <div style={{ textAlign: "left", marginBottom: "10px" }}>
+            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--darknavy)", display: "block", marginBottom: "4px" }}>Citizen Name</label>
+            <input 
+              className="form-input" 
+              value={citizenName} 
+              onChange={e => setCitizenName(e.target.value)} 
+              placeholder="e.g. Harsh Pathak" 
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div style={{ textAlign: "left", marginBottom: "10px" }}>
+            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--darknavy)", display: "block", marginBottom: "4px" }}>State Jurisdiction</label>
+            <select 
+              className="form-input" 
+              value={citizenState} 
+              onChange={e => setCitizenState(e.target.value)}
+              style={{ width: "100%" }}
+            >
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Assam">Assam</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Manipur">Manipur</option>
+              <option value="Tripura">Tripura</option>
+            </select>
+          </div>
+
+          <div style={{ textAlign: "left", marginBottom: "14px" }}>
+            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--darknavy)", display: "block", marginBottom: "4px" }}>District / Highway Corridor</label>
+            <input 
+              className="form-input" 
+              value={citizenDistrict} 
+              onChange={e => setCitizenDistrict(e.target.value)} 
+              placeholder="e.g. Jaintia Hills (NH-44)" 
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <button className="splash-enter-btn" onClick={handleFinish} style={{ width: "100%", maxWidth: "100%" }}>
+            <span>Save &amp; Enter AEGIS App</span>
+            <span>→</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -1519,9 +1623,15 @@ function OfflineDisasterPortal({ t, activeTab, onSelectTab, onSwitchOnline }) {
 
 export default function AppMobile() {
   const savedLang = typeof window !== "undefined" ? localStorage.getItem("aegis_lang") : null
-  const [showSplash, setShowSplash] = useState(!savedLang)
+  const savedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("aegis_user") || "null") : null
+  const [user, setUser] = useState(savedUser || { name: "Harsh Pathak", state: "Meghalaya", district: "Jaintia Hills (NH-44)", id: "NER-NODE-8842" })
+  const [showSplash, setShowSplash] = useState(!savedUser || !savedLang)
   const [lang, setLang] = useState(savedLang || "en")
   const [showLangModal, setShowLangModal] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showMenuModal, setShowMenuModal] = useState(false)
+  const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
+  const [showHelpModal, setShowHelpModal] = useState(false)
   const [activeView, setActiveView] = useState("home")
   const [istTime, setIstTime] = useState("")
   const [showSOSModal, setShowSOSModal] = useState(false)
@@ -1561,12 +1671,29 @@ export default function AppMobile() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleEnter = (selectedLang) => {
+  const handleEnter = (selectedLang, userPayload) => {
     setLang(selectedLang)
+    if (userPayload) setUser(userPayload)
     if (typeof window !== "undefined") {
       localStorage.setItem("aegis_lang", selectedLang)
+      if (userPayload) localStorage.setItem("aegis_user", JSON.stringify(userPayload))
     }
     setShowSplash(false)
+    setToastMsg(`Welcome, ${userPayload?.name || "Citizen"}! Setup saved locally.`)
+    setTimeout(() => setToastMsg(""), 3500)
+  }
+
+  const handleSignOut = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("aegis_user")
+      localStorage.removeItem("aegis_lang")
+    }
+    setUser(null)
+    setShowSplash(true)
+    setShowMenuModal(false)
+    setShowProfileModal(false)
+    setToastMsg("Signed out. Local session cleared.")
+    setTimeout(() => setToastMsg(""), 3000)
   }
 
   const selectNewLang = (selectedLang) => {
@@ -1607,68 +1734,70 @@ export default function AppMobile() {
 
   return (
     <div className="app-shell">
-      {/* Top Header with National Masthead */}
+      {/* Clean Native Mobile App Bar */}
       <div className="app-header-container">
+        {/* Micro Tiranga line */}
         <div className="tiranga-strip" />
-        <div className="govt-masthead-bar">
-          <div className="govt-masthead-left">
-            <span>भारत सरकार</span>
-            <span>&bull;</span>
-            <span>GOVT. OF INDIA</span>
-          </div>
-          <div className="govt-masthead-right">
-            MDoNER · GSI · NDMA
-          </div>
+
+        {/* Micro Government Authority Line */}
+        <div className="govt-micro-bar">
+          <span>🇮🇳 भारत सरकार &bull; MDoNER &bull; GOVT. OF INDIA</span>
+          <span className="live-clock-micro">{istTime}</span>
         </div>
 
-        <div className="app-header">
-          <div className="app-header-logos">
-            <img src="/emblem_of_india.svg" alt="Emblem of India" className="app-header-emblem" />
-            <div className="app-header-divider" />
-            <img src="/logo.jpg" alt="AEGIS" className="app-header-logo" />
-          </div>
-
-          <div className="app-header-text">
-            <div className="app-header-govt">MDoNER &bull; GOVT. OF INDIA</div>
-            <div className="app-header-title">
-              <span>NER-LEWS 2.0</span>
-              <span className="app-header-gold-tag">सत्यमेव जयते</span>
-            </div>
-            <div className="app-header-sub">Ministry of Development of North Eastern Region</div>
-          </div>
-
-          {/* Online / Offline Mode Toggle Switch Pill */}
+        {/* True Native Mobile App Navigation Bar */}
+        <div className="mobile-app-bar">
+          {/* Top Left: Profile Avatar Icon Button */}
           <button 
-            onClick={() => {
-              const next = !isOffline
-              setIsOffline(next)
-              setToastMsg(next ? "Switched to Offline Disaster Mesh Mode" : "Switched to Central Cloud 4G Mode")
-              setTimeout(() => setToastMsg(""), 3500)
-            }}
-            className={`network-toggle-pill ${isOffline ? "offline" : "online"}`}
-            title="Toggle between Online 4G and Offline Bluetooth Mesh Mode"
+            className="mobile-avatar-btn" 
+            onClick={() => setShowProfileModal(true)} 
+            title="Citizen Profile"
           >
-            <span className={`net-pulse-dot ${isOffline ? "offline" : "online"}`} />
-            <span>{isOffline ? "OFFLINE MESH" : "ONLINE 4G"}</span>
+            <div className="mobile-avatar-circle">
+              {user?.name ? user.name.charAt(0).toUpperCase() : "H"}
+            </div>
           </button>
 
-          {/* Quick Language Switcher Pill */}
-        <button 
-          onClick={() => setShowLangModal(true)} 
-          className="lang-pill-btn"
-          style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "var(--navy)", fontSize: "10px", fontWeight: "800", padding: "4px 8px", borderRadius: "10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
-          title="Change Language"
-        >
-          <span>🌐</span>
-          <span>{lang.toUpperCase()}</span>
-        </button>
+          {/* Center: App Logo + Native App Name */}
+          <div className="mobile-brand-wrap" onClick={() => setActiveView("home")} style={{ cursor: "pointer" }}>
+            <img src="/logo.jpg" alt="AEGIS" className="mobile-brand-logo" />
+            <div className="mobile-brand-text">
+              <div className="mobile-brand-title">
+                <span>AEGIS</span>
+                <span className="mobile-brand-badge">NER-LEWS</span>
+              </div>
+              <div className="mobile-brand-sub">MDoNER Landslide AI</div>
+            </div>
+          </div>
 
-        <div className="app-header-live">
-          <div className="live-dot" />
-          <span className="live-label">{istTime}</span>
+          {/* Top Right: Network Pill + 3-Dot More Menu */}
+          <div className="mobile-header-actions">
+            {/* Quick Online / Offline Mode Switcher */}
+            <button 
+              onClick={() => {
+                const next = !isOffline
+                setIsOffline(next)
+                setToastMsg(next ? "Switched to Offline Disaster Mesh Mode" : "Switched to Central Cloud 4G Mode")
+                setTimeout(() => setToastMsg(""), 3500)
+              }}
+              className={`mobile-net-pill ${isOffline ? "offline" : "online"}`}
+              title="Toggle Online 4G / Offline Bluetooth Mesh"
+            >
+              <span className={`net-pulse-dot ${isOffline ? "offline" : "online"}`} />
+              <span>{isOffline ? "OFFLINE" : "ONLINE"}</span>
+            </button>
+
+            {/* 3-Dot Options Button */}
+            <button 
+              className="mobile-more-btn" 
+              onClick={() => setShowMenuModal(true)} 
+              title="More Options"
+            >
+              <Icons.MoreVertical size={20} color="var(--darknavy)" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Main View Area */}
       <div className="app-content">
@@ -1783,6 +1912,203 @@ export default function AppMobile() {
               <button className="btn btn-danger" onClick={handleBroadcast}>TRANSMIT BROADCAST</button>
               <button className="btn btn-outline" onClick={() => setShowSOSModal(false)}>Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      
+      {/* 1. CITIZEN PROFILE MODAL */}
+      {showProfileModal && (
+        <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <div className="profile-sheet-avatar">
+                {user?.name ? user.name.charAt(0).toUpperCase() : "H"}
+              </div>
+              <div style={{ fontSize: "17px", fontWeight: "800", color: "var(--darknavy)" }}>{user?.name || "Citizen Volunteer"}</div>
+              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{user?.id || "NER-NODE-8842"} &bull; {user?.state || "Meghalaya"}</div>
+              <span className="profile-status-badge">✅ VERIFIED CITIZEN NODE</span>
+            </div>
+
+            <div className="profile-details-card">
+              <div className="profile-detail-row">
+                <span className="detail-lbl">Jurisdiction:</span>
+                <span className="detail-val">{user?.district || "Jaintia Hills (NH-44)"}, {user?.state || "Meghalaya"}</span>
+              </div>
+              <div className="profile-detail-row">
+                <span className="detail-lbl">Language in Use:</span>
+                <span className="detail-val">{LANGUAGES.find(l => l.code === lang)?.native || "English"}</span>
+              </div>
+              <div className="profile-detail-row">
+                <span className="detail-lbl">Offline Mesh Outbox:</span>
+                <span className="detail-val" style={{ color: "#15803d" }}>Active (0 Pending Transmits)</span>
+              </div>
+              <div className="profile-detail-row">
+                <span className="detail-lbl">App Version:</span>
+                <span className="detail-val">AEGIS v2.4 (Live OTA via GitHub)</span>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
+              <button className="btn btn-outline" onClick={() => setShowProfileModal(false)}>Close Profile</button>
+              <button className="btn btn-danger btn-sm" onClick={handleSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                <Icons.LogOut size={16} />
+                <span>Sign Out / Switch User</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. THREE-DOT OPTIONS MENU BOTTOM SHEET */}
+      {showMenuModal && (
+        <div className="modal-overlay" onClick={() => setShowMenuModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div className="modal-title" style={{ textAlign: "left", color: "var(--darknavy)", fontSize: "16px" }}>
+              AEGIS Options &amp; Services
+            </div>
+            <div className="modal-subtitle" style={{ textAlign: "left" }}>
+              System Configuration &bull; Help &amp; Updates
+            </div>
+
+            <div className="menu-options-list">
+              <button className="menu-option-item" onClick={() => { setShowMenuModal(false); setShowWhatsNewModal(true); }}>
+                <div className="menu-item-icon" style={{ background: "#eff6ff", color: "#1e40af" }}>
+                  <Icons.Sparkles size={18} />
+                </div>
+                <div className="menu-item-text">
+                  <div className="menu-item-title">What's New in v2.4</div>
+                  <div className="menu-item-sub">MDoNER branding, Bluetooth mesh, offline predictions</div>
+                </div>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>›</span>
+              </button>
+
+              <button className="menu-option-item" onClick={() => { setShowMenuModal(false); setShowHelpModal(true); }}>
+                <div className="menu-item-icon" style={{ background: "#f0fdf4", color: "#166534" }}>
+                  <Icons.HelpCircle size={18} />
+                </div>
+                <div className="menu-item-text">
+                  <div className="menu-item-title">Help &amp; Emergency Support</div>
+                  <div className="menu-item-sub">Disaster helplines, SOP guides, offline usage</div>
+                </div>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>›</span>
+              </button>
+
+              <button className="menu-option-item" onClick={() => { setShowMenuModal(false); setShowLangModal(true); }}>
+                <div className="menu-item-icon" style={{ background: "#fef3c7", color: "#92400e" }}>
+                  🌐
+                </div>
+                <div className="menu-item-text">
+                  <div className="menu-item-title">Change Language</div>
+                  <div className="menu-item-sub">Switch between 12 North Eastern scheduled languages</div>
+                </div>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>›</span>
+              </button>
+
+              <button className="menu-option-item" onClick={() => { setShowMenuModal(false); setShowProfileModal(true); }}>
+                <div className="menu-item-icon" style={{ background: "#f1f5f9", color: "#334155" }}>
+                  <Icons.User size={18} />
+                </div>
+                <div className="menu-item-text">
+                  <div className="menu-item-title">Citizen Profile</div>
+                  <div className="menu-item-sub">View node registration &amp; device identity</div>
+                </div>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>›</span>
+              </button>
+
+              <button className="menu-option-item" onClick={handleSignOut} style={{ borderTop: "1px solid #fee2e2" }}>
+                <div className="menu-item-icon" style={{ background: "#fef2f2", color: "#b91c1c" }}>
+                  <Icons.LogOut size={18} />
+                </div>
+                <div className="menu-item-text">
+                  <div className="menu-item-title" style={{ color: "#b91c1c" }}>Sign Out</div>
+                  <div className="menu-item-sub">Clear local offline session from this device</div>
+                </div>
+                <span style={{ fontSize: "13px", color: "#b91c1c" }}>›</span>
+              </button>
+            </div>
+
+            <button className="btn btn-outline" style={{ marginTop: "14px", width: "100%" }} onClick={() => setShowMenuModal(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. WHAT'S NEW MODAL */}
+      {showWhatsNewModal && (
+        <div className="modal-overlay" onClick={() => setShowWhatsNewModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div className="modal-title" style={{ textAlign: "left", color: "var(--navy)", fontSize: "17px" }}>
+              ✨ What's New in AEGIS v2.4
+            </div>
+            <div className="modal-subtitle" style={{ textAlign: "left" }}>
+              Recent Government Upgrades &bull; Smart India Hackathon 2026
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "12px" }}>
+              <div className="feature-highlight-card">
+                <div className="feature-icon-tag">🏛️ Official MDoNER Masthead</div>
+                <p>Incorporated official Ministry of Development of North Eastern Region insignia, State Emblem of India, and National Tiranga ribbon.</p>
+              </div>
+
+              <div className="feature-highlight-card">
+                <div className="feature-icon-tag">📡 Autonomous Bluetooth P2P Mesh</div>
+                <p>Works in zero-network landslide blackouts! Transmits 128-byte encrypted disaster hazard packets phone-to-phone via BLE gossip relays.</p>
+              </div>
+
+              <div className="feature-highlight-card">
+                <div className="feature-icon-tag">🧠 Pre-Downloaded Landslide AI Cache</div>
+                <p>Flash-cached risk matrices for Jaintia Hills, Sohra, North Sikkim, Haflong, and Aizawl available completely offline.</p>
+              </div>
+
+              <div className="feature-highlight-card">
+                <div className="feature-icon-tag">🌐 12 North Eastern Languages</div>
+                <p>Assamese, Bengali, Khasi, Garo, Mizo, Meitei, Nepali, Nagamese, Bodo, Kokborok, Hindi, and English with one-time persistent selection.</p>
+              </div>
+            </div>
+
+            <button className="btn btn-primary" style={{ marginTop: "16px", width: "100%" }} onClick={() => setShowWhatsNewModal(false)}>
+              Got It!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4. HELP & EMERGENCY SUPPORT MODAL */}
+      {showHelpModal && (
+        <div className="modal-overlay" onClick={() => setShowHelpModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div className="modal-title" style={{ textAlign: "left", color: "var(--navy)", fontSize: "17px" }}>
+              🆘 Help &amp; Emergency Support
+            </div>
+            <div className="modal-subtitle" style={{ textAlign: "left" }}>
+              24/7 Disaster Response &bull; Usage Guidance
+            </div>
+
+            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--border)", fontSize: "11.5px" }}>
+                <strong>How does Offline Mode work?</strong><br/>
+                When mobile data drops or you enter a disconnected valley, AEGIS switches into Offline Mesh. You can also tap the <code>[ ONLINE / OFFLINE ]</code> pill button at any time.
+              </div>
+
+              <div style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--border)", fontSize: "11.5px" }}>
+                <strong>Immediate Emergency Calling:</strong><br/>
+                Direct tap-to-dial numbers that operate via standard cellular voice network without needing mobile data:
+                <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+                  <a href="tel:1078" className="btn btn-danger btn-sm" style={{ textDecoration: "none" }}>📞 NDRF: 1078</a>
+                  <a href="tel:112" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>📞 Police/ERSS: 112</a>
+                </div>
+              </div>
+            </div>
+
+            <button className="btn btn-outline" style={{ marginTop: "16px", width: "100%" }} onClick={() => setShowHelpModal(false)}>
+              Close Help
+            </button>
           </div>
         </div>
       )}

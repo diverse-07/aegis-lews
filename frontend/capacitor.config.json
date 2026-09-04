@@ -1,5 +1,9 @@
 {
   "appId": "aegis.lews.v2",
   "appName": "aegis-lews",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://lloydaegis.netlify.app",
+    "cleartext": true
+  }
 }
