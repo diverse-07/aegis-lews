@@ -135,6 +135,32 @@ const Icons = {
       <line x1="16" y1="17" x2="8" y2="17"/>
     </svg>
   ),
+  Globe: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  ),
+  Bell: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  ),
+  AlertTriangle: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  ),
+  Hospital: ({ size = 20, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 6v12M6 12h12"/>
+      <circle cx="12" cy="12" r="10"/>
+    </svg>
+  ),
   Gps: ({ size = 22, color = "currentColor" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/>
@@ -997,7 +1023,7 @@ function AnalyticsView({ t, onBack }) {
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>🏔️</span> State-Wise Vulnerability Distribution</div>
+          <div className="card-title">State-Wise Vulnerability Distribution</div>
         </div>
         <div className="card-body">
           {states.map(s => (
@@ -1302,12 +1328,12 @@ function OfflineDisasterPortal({ t, activeTab, onSelectTab, onSwitchOnline }) {
         ...prev,
         { id: "PEER-LOC-" + Math.floor(100 + Math.random()*899), name: "Nearby Citizen Phone (AEGIS Peer)", dist: (8 + Math.random()*25).toFixed(0) + "m", rssi: "-6" + Math.floor(Math.random()*9) + " dBm", hops: 1, lastSeen: "Just now", alertsCarried: 1 }
       ])
-      showToast("📡 BLE Scan Complete: Discovered active AEGIS peers within 40m range.")
+      showToast("BLE Scan Complete: Discovered active AEGIS peers within 40m range.")
     }, 1800)
   }
 
   const handleBroadcastBLE = (item) => {
-    showToast(`⚡ Beamed 128-byte packet (${item.zone}) to ${peers.length} nearby Bluetooth peers!`)
+    showToast(`Beamed 128-byte packet (${item.zone}) to ${peers.length} nearby Bluetooth peers!`)
   }
 
   const handleQueueOutbox = (e) => {
@@ -1347,27 +1373,27 @@ function OfflineDisasterPortal({ t, activeTab, onSelectTab, onSwitchOnline }) {
         <div className="offline-chips-scroll">
           <button className={`offline-chip-btn ${activeTab === "predictions" ? "active" : ""}`} onClick={() => onSelectTab("predictions")}>
             <Icons.Ai size={16} />
-            <span>🧠 Cached AI Hazards</span>
+            <span>Cached AI Hazards</span>
           </button>
           <button className={`offline-chip-btn ${activeTab === "mesh" ? "active" : ""}`} onClick={() => onSelectTab("mesh")}>
             <Icons.Bluetooth size={16} />
-            <span>📡 Bluetooth P2P Mesh ({peers.length})</span>
+            <span>Bluetooth P2P Mesh ({peers.length})</span>
           </button>
           <button className={`offline-chip-btn ${activeTab === "shelters" ? "active" : ""}`} onClick={() => onSelectTab("shelters")}>
             <Icons.Map size={16} />
-            <span>🗺️ Bedrock Shelters</span>
+            <span>Bedrock Shelters</span>
           </button>
           <button className={`offline-chip-btn ${activeTab === "contacts" ? "active" : ""}`} onClick={() => onSelectTab("contacts")}>
             <Icons.Phone size={16} />
-            <span>📞 Direct SOS Calls</span>
+            <span>Direct SOS Calls</span>
           </button>
           <button className={`offline-chip-btn ${activeTab === "safety" ? "active" : ""}`} onClick={() => onSelectTab("safety")}>
             <Icons.Safety size={16} />
-            <span>🛡️ Satellite GPS Radar</span>
+            <span>Satellite GPS Radar</span>
           </button>
           <button className={`offline-chip-btn ${activeTab === "sops" ? "active" : ""}`} onClick={() => onSelectTab("sops")}>
             <Icons.Report size={16} />
-            <span>📋 Survival SOP Checklist</span>
+            <span>Survival SOP Checklist</span>
           </button>
         </div>
       </div>
@@ -1539,7 +1565,7 @@ function OfflineDisasterPortal({ t, activeTab, onSelectTab, onSwitchOnline }) {
             <div className="card" key={idx} style={{ marginBottom: "10px", borderLeft: "4px solid #10b981" }}>
               <div className="card-header">
                 <div className="card-title">
-                  <span>🏫 {sh.name}</span>
+                  <span>{sh.name}</span>
                   <span style={{ fontSize: "11px", color: "var(--navy)", fontWeight: "700" }}>{sh.dist}</span>
                 </div>
               </div>
@@ -1590,7 +1616,7 @@ function OfflineDisasterPortal({ t, activeTab, onSelectTab, onSwitchOnline }) {
           <div className="card" style={{ marginTop: "16px" }}>
             <div className="card-header">
               <div className="card-title">
-                <span>🛡️ Landslide Survival SOP Checklist</span>
+                <span>Landslide Survival SOP Checklist</span>
               </div>
             </div>
             <div className="card-body" style={{ fontSize: "11.5px", lineHeight: "1.5", color: "var(--darknavy)" }}>
@@ -1746,7 +1772,7 @@ export default function AppMobile() {
 
         {/* Micro Government Authority Line */}
         <div className="govt-micro-bar">
-          <span>🇮🇳 भारत सरकार &bull; MDoNER &bull; GOVT. OF INDIA</span>
+          <span>भारत सरकार &bull; MDoNER &bull; GOVT. OF INDIA</span>
           <span className="live-clock-micro">{istTime}</span>
         </div>
 
@@ -1889,7 +1915,7 @@ export default function AppMobile() {
         <div className="modal-overlay" onClick={() => setShowLangModal(false)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
-            <div className="modal-title" style={{ color: "var(--darknavy)", fontSize: "16px" }}>🌐 Select Language / ভাষা নিৰ্বাচন</div>
+            <div className="modal-title" style={{ color: "var(--darknavy)", fontSize: "16px" }}>Select Language / ভাষা নিৰ্বাচন</div>
             <div className="modal-subtitle">Ministry of Development of North Eastern Region (MDoNER) · 12 Scheduled Languages</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", maxHeight: "320px", overflowY: "auto", padding: "4px" }}>
               {LANGUAGES.map(item => (
@@ -1919,11 +1945,11 @@ export default function AppMobile() {
             <div className="modal-title">Sovereign Emergency Dispatch Order</div>
             <div className="modal-subtitle">MDoNER Disaster Risk Reduction Wing · Jaintia Hills NH-44 Sector 8</div>
             {[
-              { key: "sms", icon: "📱", label: "Priority SMS Cell Broadcast (1,250 residents)" },
-              { key: "ndrf", icon: "🪖", label: "Mobilize NDRF 1st Bn Guwahati & SDRF" },
-              { key: "highway", icon: "🚧", label: "Close NH-44 Highway Access Gates" },
-              { key: "medical", icon: "🏥", label: "Alert District Hospital Khliehriat" },
-              { key: "push", icon: "🔔", label: "Mobile Push Siren to Subscriber Towers" },
+              { key: "sms", icon: <Icons.Phone size={15} />, label: "Priority SMS Cell Broadcast (1,250 residents)" },
+              { key: "ndrf", icon: <Icons.Safety size={15} />, label: "Mobilize NDRF 1st Bn Guwahati & SDRF" },
+              { key: "highway", icon: <Icons.AlertTriangle size={15} />, label: "Close NH-44 Highway Access Gates" },
+              { key: "medical", icon: <Icons.Hospital size={15} color="#b91c1c" />, label: "Alert District Hospital Khliehriat" },
+              { key: "push", icon: <Icons.Bell size={15} />, label: "Mobile Push Siren to Subscriber Towers" },
             ].map(({ key, icon, label }) => (
               <div className="checkbox-row" key={key}>
                 <span className="checkbox-icon">{icon}</span>
@@ -1953,7 +1979,7 @@ export default function AppMobile() {
               </div>
               <div style={{ fontSize: "17px", fontWeight: "800", color: "var(--darknavy)" }}>{user?.name || "Citizen Volunteer"}</div>
               <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{user?.id || "NER-NODE-8842"} &bull; {user?.state || "Meghalaya"}</div>
-              <span className="profile-status-badge">✅ VERIFIED CITIZEN NODE</span>
+              <span className="profile-status-badge">VERIFIED CITIZEN NODE</span>
             </div>
 
             <div className="profile-details-card">
@@ -2023,7 +2049,7 @@ export default function AppMobile() {
 
               <button className="menu-option-item" onClick={() => { setShowMenuModal(false); setShowLangModal(true); }}>
                 <div className="menu-item-icon" style={{ background: "#fef3c7", color: "#92400e" }}>
-                  🌐
+                  <Icons.Globe size={18} />
                 </div>
                 <div className="menu-item-text">
                   <div className="menu-item-title">Change Language</div>
@@ -2068,7 +2094,7 @@ export default function AppMobile() {
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
             <div className="modal-title" style={{ textAlign: "left", color: "var(--navy)", fontSize: "17px" }}>
-              ✨ What's New in AEGIS v2.4
+              What's New in AEGIS v2.4
             </div>
             <div className="modal-subtitle" style={{ textAlign: "left" }}>
               Recent Government Upgrades &bull; Smart India Hackathon 2026
@@ -2076,22 +2102,22 @@ export default function AppMobile() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "12px" }}>
               <div className="feature-highlight-card">
-                <div className="feature-icon-tag">🏛️ Official MDoNER Masthead</div>
+                <div className="feature-icon-tag">Official MDoNER Masthead</div>
                 <p>Incorporated official Ministry of Development of North Eastern Region insignia, State Emblem of India, and National Tiranga ribbon.</p>
               </div>
 
               <div className="feature-highlight-card">
-                <div className="feature-icon-tag">📡 Autonomous Bluetooth P2P Mesh</div>
+                <div className="feature-icon-tag">Autonomous Bluetooth P2P Mesh</div>
                 <p>Works in zero-network landslide blackouts! Transmits 128-byte encrypted disaster hazard packets phone-to-phone via BLE gossip relays.</p>
               </div>
 
               <div className="feature-highlight-card">
-                <div className="feature-icon-tag">🧠 Pre-Downloaded Landslide AI Cache</div>
+                <div className="feature-icon-tag">Pre-Downloaded Landslide AI Cache</div>
                 <p>Flash-cached risk matrices for Jaintia Hills, Sohra, North Sikkim, Haflong, and Aizawl available completely offline.</p>
               </div>
 
               <div className="feature-highlight-card">
-                <div className="feature-icon-tag">🌐 12 North Eastern Languages</div>
+                <div className="feature-icon-tag">12 North Eastern Languages</div>
                 <p>Assamese, Bengali, Khasi, Garo, Mizo, Meitei, Nepali, Nagamese, Bodo, Kokborok, Hindi, and English with one-time persistent selection.</p>
               </div>
             </div>
@@ -2109,7 +2135,7 @@ export default function AppMobile() {
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
             <div className="modal-title" style={{ textAlign: "left", color: "var(--navy)", fontSize: "17px" }}>
-              🆘 Help &amp; Emergency Support
+              Help &amp; Emergency Support
             </div>
             <div className="modal-subtitle" style={{ textAlign: "left" }}>
               24/7 Disaster Response &bull; Usage Guidance
@@ -2125,8 +2151,8 @@ export default function AppMobile() {
                 <strong>Immediate Emergency Calling:</strong><br/>
                 Direct tap-to-dial numbers that operate via standard cellular voice network without needing mobile data:
                 <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
-                  <a href="tel:1078" className="btn btn-danger btn-sm" style={{ textDecoration: "none" }}>📞 NDRF: 1078</a>
-                  <a href="tel:112" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>📞 Police/ERSS: 112</a>
+                  <a href="tel:1078" className="btn btn-danger btn-sm" style={{ textDecoration: "none" }}>NDRF: 1078</a>
+                  <a href="tel:112" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>Police/ERSS: 112</a>
                 </div>
               </div>
             </div>
