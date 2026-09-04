@@ -1,118 +1,72 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { MapContainer, TileLayer, Polygon, CircleMarker, Popup } from "react-leaflet"
-import { getWeather, broadcastAlert, getZones, getAlerts } from "./api/client"
+import { getWeather, broadcastAlert } from "./api/client"
 import "./mobile.css"
 
-// ‘ˆ«‘ˆ«‘ˆ« DATA ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
+// GEOSPATIAL & SENSOR DATA
 const ZONES = [
-  { id:1, name:"Jaintia Hills", state:"Meghalaya", score:87, risk:"CRITICAL", coords:[[25.20,92.30],[25.00,92.00],[24.85,92.40],[25.05,92.70]], desc:"Active Disang shale thrust. NH-44 debris flow risk." },
-  { id:2, name:"Sohra / Cherrapunji", state:"Meghalaya", score:74, risk:"HIGH", coords:[[25.40,91.60],[25.20,91.40],[25.10,91.70],[25.30,91.90]], desc:"World-record rainfall. Limestone escarpment failure." },
-  { id:3, name:"Ri-Bhoi District", state:"Meghalaya", score:52, risk:"MODERATE", coords:[[26.00,91.70],[25.70,91.50],[25.60,92.00],[25.90,92.20]], desc:"Sub-Himalayan foothills. Seasonal soil slips." },
-  { id:4, name:"Brahmaputra Valley", state:"Assam", score:18, risk:"SAFE", coords:[[26.50,91.20],[26.10,90.80],[25.95,92.00],[26.40,92.50]], desc:"Flat alluvial floodplain. Very low slope gradient." },
-  { id:5, name:"Barak Valley", state:"Assam", score:32, risk:"LOW", coords:[[25.00,92.60],[24.70,92.30],[24.55,92.80],[24.80,93.10]], desc:"Rolling hills. Flash flood risk in peak monsoon." },
-  { id:6, name:"North Sikkim", state:"Sikkim", score:83, risk:"CRITICAL", coords:[[28.00,88.40],[27.60,88.10],[27.40,88.50],[27.70,88.80]], desc:"Teesta MCT active fault. Glacial moraine instability." },
-  { id:7, name:"South Sikkim", state:"Sikkim", score:55, risk:"MODERATE", coords:[[27.40,88.40],[27.10,88.20],[27.00,88.55],[27.25,88.75]], desc:"Namchi terraced ridges. Sandstone weathering." },
-  { id:8, name:"Aizawl East", state:"Mizoram", score:71, risk:"HIGH", coords:[[23.85,92.60],[23.65,92.40],[23.55,92.80],[23.75,93.00]], desc:"Urban hill cutting. Saturated residential slopes." },
-  { id:9, name:"Lunglei District", state:"Mizoram", score:48, risk:"MODERATE", coords:[[23.10,92.80],[22.75,92.60],[22.65,93.00],[22.95,93.20]], desc:"Longitudinal valley ridges. Moderate soil saturation." },
-  { id:10, name:"Kohima District", state:"Nagaland", score:68, risk:"HIGH", coords:[[25.80,94.00],[25.55,93.75],[25.45,94.20],[25.65,94.45]], desc:"NH-29 corridor. Active slope cutting and subsidence." },
-  { id:11, name:"Mon District", state:"Nagaland", score:29, risk:"LOW", coords:[[27.00,95.00],[26.60,94.75],[26.50,95.20],[26.80,95.45]], desc:"Forested gentle slopes. Low historical slide frequency." },
-  { id:12, name:"Imphal East", state:"Manipur", score:15, risk:"SAFE", coords:[[24.95,93.90],[24.70,93.65],[24.60,94.05],[24.85,94.25]], desc:"Loktak basin floor. Flat stable alluvial terrain." },
-  { id:13, name:"Senapati District", state:"Manipur", score:50, risk:"MODERATE", coords:[[25.40,93.90],[25.10,93.65],[24.95,94.10],[25.25,94.35]], desc:"Hill district terraced agriculture. Seasonal erosion." },
-  { id:14, name:"Tawang District", state:"Arunachal Pradesh", score:81, risk:"CRITICAL", coords:[[27.75,91.95],[27.45,91.65],[27.30,92.05],[27.60,92.35]], desc:"High-altitude MCT zone. Permafrost degradation." },
-  { id:15, name:"Itanagar", state:"Arunachal Pradesh", score:45, risk:"MODERATE", coords:[[27.20,93.65],[26.95,93.40],[26.85,93.80],[27.10,94.00]], desc:"Tertiary sandstone hills. Urban slope cutting." },
-  { id:16, name:"Agartala Plains", state:"Tripura", score:12, risk:"SAFE", coords:[[23.95,91.20],[23.70,91.00],[23.60,91.40],[23.85,91.60]], desc:"Flat river basin. Very stable alluvial terrain." },
+  { id:1, name:"Jaintia Hills", state:"Meghalaya", score:87, risk:"CRITICAL", coords:[[25.20,92.30],[25.00,92.00],[24.85,92.40],[25.05,92.70]], desc:"Active Disang shale thrust. NH-44 debris flow corridor." },
+  { id:2, name:"Sohra / Cherrapunji", state:"Meghalaya", score:74, risk:"HIGH", coords:[[25.40,91.60],[25.20,91.40],[25.10,91.70],[25.30,91.90]], desc:"Extreme rainfall zone. Limestone escarpment failure." },
+  { id:3, name:"Ri-Bhoi Foothills", state:"Meghalaya", score:52, risk:"MODERATE", coords:[[26.00,91.70],[25.70,91.50],[25.60,92.00],[25.90,92.20]], desc:"Seasonal translational soil slips along highway." },
+  { id:4, name:"North Sikkim MCT", state:"Sikkim", score:83, risk:"CRITICAL", coords:[[28.00,88.40],[27.60,88.10],[27.40,88.50],[27.70,88.80]], desc:"Main Central Thrust active fault. Glacial moraine instability." },
+  { id:5, name:"Gangtok South Ridge", state:"Sikkim", score:78, risk:"HIGH", coords:[[27.40,88.65],[27.20,88.50],[27.15,88.75],[27.35,88.85]], desc:"Terraced hill slope weathering. NH-10 connectivity link." },
+  { id:6, name:"Aizawl East Flank", state:"Mizoram", score:76, risk:"HIGH", coords:[[23.85,92.60],[23.65,92.40],[23.55,92.80],[23.75,93.00]], desc:"Urban slope cutting. Sandstone formation saturation." },
+  { id:7, name:"Lunglei Ridge", state:"Mizoram", score:48, risk:"MODERATE", coords:[[23.10,92.80],[22.75,92.60],[22.65,93.00],[22.95,93.20]], desc:"Longitudinal valley slope with moderate moisture." },
+  { id:8, name:"Kohima Dzudza", state:"Nagaland", score:68, risk:"HIGH", coords:[[25.80,94.00],[25.55,93.75],[25.45,94.20],[25.65,94.45]], desc:"NH-29 bridge corridor. Active slope subsidence." },
+  { id:9, name:"Tawang MCT Zone", state:"Arunachal", score:81, risk:"CRITICAL", coords:[[27.75,91.95],[27.45,91.65],[27.30,92.05],[27.60,92.35]], desc:"High altitude permafrost degradation along passes." },
+  { id:10, name:"Haflong Hill Station", state:"Assam", score:85, risk:"CRITICAL", coords:[[25.25,93.10],[25.05,92.90],[24.95,93.25],[25.15,93.35]], desc:"Dima Hasao railway hill cut. High debris flow record." },
+  { id:11, name:"Senapati Terraces", state:"Manipur", score:54, risk:"MODERATE", coords:[[25.40,93.90],[25.10,93.65],[24.95,94.10],[25.25,94.35]], desc:"Hill agricultural slopes. Seasonal monsoon erosion." },
+  { id:12, name:"Agartala Basin", state:"Tripura", score:18, risk:"SAFE", coords:[[23.95,91.20],[23.70,91.00],[23.60,91.40],[23.85,91.60]], desc:"Stable alluvial terrain. Very low gradient." },
 ]
 
 const SENSORS = [
-  { id:"SNR-ML-001", name:"Jaintia Hills", status:"online", reading:"87% moisture -¿ 12mm/hr", lat:25.05, lng:92.12 },
-  { id:"SNR-ML-002", name:"Sohra Station", status:"online", reading:"180mm / 24hr", lat:25.28, lng:91.72 },
-  { id:"SNR-SK-004", name:"North Sikkim", status:"online", reading:"4.2mm displacement", lat:27.60, lng:88.45 },
-  { id:"SNR-MZ-012", name:"Aizawl", status:"degraded", reading:"88% moisture", lat:23.73, lng:92.72 },
-  { id:"SNR-NL-007", name:"Kohima", status:"online", reading:"76mm / 24hr", lat:25.67, lng:94.11 },
-  { id:"SNR-AS-019", name:"Barak Valley", status:"online", reading:"River level: HIGH", lat:24.80, lng:92.75 },
-  { id:"SNR-MN-003", name:"Senapati", status:"offline", reading:"Last reading: 2 hrs ago", lat:25.27, lng:94.02 },
-  { id:"SNR-AR-008", name:"Tawang", status:"online", reading:"68mm/24hr -¿ -2-¶C", lat:27.59, lng:91.86 },
+  { id:"STN-JH-082", name:"Jaintia Hills NH-44", state:"Meghalaya", status:"online", reading:"87% moisture ¬∑ 4.2mm/h shear", lat:25.4484, lng:92.2152, batt:"12.8V" },
+  { id:"STN-ML-002", name:"Sohra Escarpment", state:"Meghalaya", status:"online", reading:"180mm / 24hr acc.", lat:25.2986, lng:91.7322, batt:"12.9V" },
+  { id:"STN-SK-014", name:"Gangtok South Ridge", state:"Sikkim", status:"online", reading:"74% moisture ¬∑ 2.8mm/h", lat:27.3389, lng:88.6065, batt:"12.6V" },
+  { id:"STN-MZ-049", name:"Aizawl Bawngkawn", state:"Mizoram", status:"degraded", reading:"84% moisture ¬∑ Solar low", lat:23.7271, lng:92.7176, batt:"11.4V" },
+  { id:"STN-NL-021", name:"Kohima NH-29", state:"Nagaland", status:"online", reading:"62mm/24h ¬∑ 1.2mm/h", lat:25.6751, lng:94.1086, batt:"12.5V" },
+  { id:"STN-AS-102", name:"Haflong Pass", state:"Assam", status:"online", reading:"128mm/24h ¬∑ Critical", lat:25.1800, lng:93.0200, batt:"12.7V" },
+  { id:"STN-MN-003", name:"Senapati Corridor", state:"Manipur", status:"offline", reading:"Offline: Power cell fail", lat:24.9800, lng:93.4900, batt:"0.0V" },
+  { id:"STN-AR-008", name:"Tawang MCT Pass", state:"Arunachal", status:"online", reading:"68mm/24h ¬∑ -2C ambient", lat:27.5861, lng:91.8594, batt:"12.8V" },
 ]
 
 const LANGUAGES = [
-  { code:"en", flag:"≠ÉÁ´≠ÉÁ¶", native:"English", english:"English" },
-  { code:"hi", flag:"≠É˘˙¥©≈", native:"”Ò¶”Ò+”ÒÈ”Ò™”—«", english:"Hindi" },
-  { code:"as", flag:"≠ÉÓË", native:"”™‡”™©”™´”∫«”™ª”™+”™•", english:"Assamese" },
-  { code:"bn", flag:"≠ÉÙ˚", native:"”™º”™•”™È”™¶”™•", english:"Bengali" },
-  { code:"mni", flag:"≠É≈ˆ¥©≈", native:"”™´”∫Í”™Ò”∫Í”™¶”∫Ô”™ø”∫Ï", english:"Meitei" },
-  { code:"ne", flag:"‘¯¶¥©≈", native:"”Òø”—Á”Ò¨”Ò•”Ò¶”—«", english:"Nepali" },
+  { code:"en", flag:"IN", native:"English", english:"English" },
+  { code:"hi", flag:"IN", native:"Hindi", english:"Hindi" },
+  { code:"as", flag:"IN", native:"Assamese", english:"Assamese" },
+  { code:"bn", flag:"IN", native:"Bengali", english:"Bengali" },
+  { code:"mni", flag:"IN", native:"Meitei", english:"Meitei" },
+  { code:"ne", flag:"IN", native:"Nepali", english:"Nepali" },
 ]
 
 const TRANSLATIONS = {
   en: {
-    appTitle: "NER Landslide Early Warning System",
-    dashboard: "Home",
-    map: "Map",
-    alerts: "Alerts",
-    sensors: "Sensors",
-    report: "Report",
-    activeWarning: "‘‹·¥©≈ Active Warning",
-    warningText: "CRITICAL landslide risk ‘«ˆ Jaintia Hills, Meghalaya. 180mm/24hr. Evacuate 3 villages.",
-    criticalZones: "Critical Zones",
-    liveSensors: "Live Sensors",
-    aiConfidence: "AI Confidence",
-    checkSafety: "≠ÉÙÏ Check My Safety",
-    checking: "≠ÉÙÌ Checking...",
-    emergency: "≠É‹ø Emergency Dispatch",
-    rainfall: "Rainfall Simulator",
-    submitReport: "Submit Report",
-    analytics: "Analytics",
+    dashboard:"Home", map:"Risk Map", ai:"AI Predict", sensors:"Telemetry", analytics:"Analytics",
+    alerts:"Alerts", simulator:"Simulator", safety:"Safety Check", report:"Report",
+    activeWarning:"CRITICAL HAZARD WARNING",
+    warningText:"Jaintia Hills, Meghalaya (NH-44) ¬∑ 142mm/24h ¬∑ Evacuate 3 villages.",
+    checkSafety:"Check GPS Safety", checking:"Triangulating...", emergency:"Emergency Broadcast",
+    criticalZones:"Critical Zones", liveSensors:"Live Stations", aiConfidence:"AI Confidence",
   },
   hi: {
-    appTitle: "NER ”Ò°”—È”Ò©”—Ï”Ò˚”Ò¶”Òø ”Ò‹”—Á”ÒÒ”Ò•”Ò¡”Òø”—« ”Ò¨”—Ï”Ò¶”Ò˙”Ò•”Ò¶”—«",
-    dashboard: "”Ò¶”—Ô”Ò´",
-    map: "”Òø”ÒÚ”—Ï”Ò¬”Ò•",
-    alerts: "”Ò‡”Ò¶”Ò¶”—Ï”ÒÉ",
-    sensors: "”Ò©”—Á”ÒÈ”Ò©”Ò¶",
-    report: "”Ò¶”Ò+”Ò¨”—Ô”Ò¶”—Ï”ÒÉ",
-    activeWarning: "‘‹·¥©≈ ”Ò©”ÒÚ”—Ï”Ò¶”Ò+”Òª ”Ò‹”—Á”ÒÒ”Ò•”Ò¡”Òø”—«",
-    warningText: "”Ò˘”ÒÈ”Ò°”—«”Ò¶ ”Ò°”—È”Ò©”—Ï”Ò˚”Ò¶”Òø ”Ò˚”ÒÒ”Ò¶”Ò• ‘«ˆ ”Ò£”Òª”ÒÈ”ÒÒ”Ò+”Òª”Ò• ”Ò¶”Ò+”Ò¶”—Ï”Ò©, ”Ò´”—Á”Òˇ”Ò•”Ò¶”Òª”—Ò 180”Ò´”Ò+”Ò´”—«/24”Òˇ”ÒÈ”ÒÉ”—Á”—Ò",
-    criticalZones: "”Ò˘”ÒÈ”Ò°”—«”Ò¶ ”ÒÚ”—Ï”Ò¿”—Á”ÒÒ”—Ï”Ò¶",
-    liveSensors: "”Ò¶”Ò•”ÒÁ”Ò¡ ”Ò©”—Á”ÒÈ”Ò©”Ò¶",
-    aiConfidence: "AI ”Ò¡”Ò+”Ò¬”—Ï”Ò¡”Ò•”Ò©",
-    checkSafety: "≠ÉÙÏ ”Ò´”—Á”Ò¶”—« ”Ò©”—¸”Ò¶”ÒÚ”—Ï”Ò¿”Ò• ”Ò£”Ò•”Ò¸”Ò‹”—Á”ÒÈ",
-    checking: "≠ÉÙÌ ”Ò£”Ò•”Ò¸”Ò‹ ”Ò¶”—Ô ”Ò¶”Ò¶”—« ”Ò¶”—Í...",
-    emergency: "≠É‹ø ”ÒÂ”Ò¨”Ò•”ÒÒ”ÒÚ”Ò•”Ò¶”—«”Òø",
-    rainfall: "”Ò¡”Ò¶”—Ï”Ò¿”Ò• ”Ò©”Ò+”Ò´”—¸”Ò¶”—Á”ÒÉ”Ò¶",
-    submitReport: "”Ò¶”Ò+”Ò¨”—Ô”Ò¶”—Ï”ÒÉ ”Ò™”Ò¶”—Ï”Ò£ ”ÒÚ”Ò¶”—Á”ÒÈ",
-    analytics: "”Ò¡”Ò+”Ò¬”—Ï”Ò¶”—Á”Ò¿”Ò˙",
+    dashboard:"‡§π‡•ã‡§Æ", map:"‡§®‡§ï‡•ç‡§∂‡§æ", ai:"AI ‡§≠‡§µ‡§ø‡§∑‡•ç‡§Ø‡§µ‡§æ‡§£‡•Ä", sensors:"‡§∏‡•á‡§Ç‡§∏‡§∞", analytics:"‡§è‡§®‡§æ‡§≤‡§ø‡§ü‡§ø‡§ï‡•ç‡§∏",
+    alerts:"‡§Ö‡§≤‡§∞‡•ç‡§ü", simulator:"‡§∏‡§ø‡§Æ‡•Å‡§≤‡•á‡§ü‡§∞", safety:"‡§∏‡•Å‡§∞‡§ï‡•ç‡§∑‡§æ ‡§ú‡§æ‡§Å‡§ö", report:"‡§∞‡§ø‡§™‡•ã‡§∞‡•ç‡§ü",
+    activeWarning:"‡§ó‡§Ç‡§≠‡•Ä‡§∞ ‡§ñ‡§§‡§∞‡§æ ‡§ö‡•á‡§§‡§æ‡§µ‡§®‡•Ä",
+    warningText:"‡§ú‡§Ø‡§Ç‡§§‡§ø‡§Ø‡§æ ‡§π‡§ø‡§≤‡•ç‡§∏, ‡§Æ‡•á‡§ò‡§æ‡§≤‡§Ø (NH-44) ¬∑ 142‡§Æ‡§ø‡§Æ‡•Ä/24‡§ò‡§Ç‡§ü‡•á ¬∑ ‡§§‡§§‡•ç‡§ï‡§æ‡§≤ ‡§∏‡•Å‡§∞‡§ï‡•ç‡§∑‡§ø‡§§ ‡§∏‡•ç‡§•‡§æ‡§® ‡§™‡§∞ ‡§ú‡§æ‡§è‡§Ç‡•§",
+    checkSafety:"‡§Æ‡•á‡§∞‡•Ä ‡§∏‡•Å‡§∞‡§ï‡•ç‡§∑‡§æ ‡§ú‡§æ‡§Å‡§ö‡•á‡§Ç", checking:"‡§ú‡§æ‡§Å‡§ö ‡§ú‡§æ‡§∞‡•Ä...", emergency:"‡§Ü‡§™‡§æ‡§§‡§ï‡§æ‡§≤‡•Ä‡§® ‡§™‡•ç‡§∞‡§∏‡§æ‡§∞‡§£",
+    criticalZones:"‡§ó‡§Ç‡§≠‡•Ä‡§∞ ‡§ï‡•ç‡§∑‡•á‡§§‡•ç‡§∞", liveSensors:"‡§∏‡§ï‡•ç‡§∞‡§ø‡§Ø ‡§∏‡•ç‡§ü‡•á‡§∂‡§®", aiConfidence:"AI ‡§∏‡§ü‡•Ä‡§ï‡§§‡§æ",
   },
   as: {
-    appTitle: "NER ”™°”∫È”™´”™+”™©”∫Ï”™˚”™¶”™ø ”™©”™Ò”∫¶”∫Ï”™Ú”™Ò”™• ”™¨”∫Ï”∫¶”™˙”™•”™¶”∫«",
-    dashboard: "”™¶”∫Ô”™´",
-    map: "”™´”™•”™ø”™‹”™+”™Ò”∫Ï”∫¶",
-    alerts: "”™©”™Ò”∫¶”∫Ï”™Ú”™Ò”™•",
-    sensors: "”™‹”∫Á”™ø”∫Ï”™©”∫¶",
-    report: "”∫¶”™+”™¨”∫Ô”∫¶”∫Ï”™É",
-    activeWarning: "‘‹·¥©≈ ”™©”™Ú”∫Ï”∫¶”™+”™ª”™+ ”™©”™Ò”∫¶”∫Ï”™Ú”™Ò”™•",
-    warningText: "”™£”™ª”™+”™ø”∫Ï”™Ò”™+”™ª”™+”™• ”™¨”™•”™¶”™•”∫¶”™Ò ”™°”∫È”™´”™+”™©”∫Ï”™˚”™¶”™ø”∫¶ ”™º”™+”™¨”™™”—Ò 180”™´”™+”™´”™+/”∫ø”∫¨”™ˇ”™˙”∫Ï”™É”™•”—Ò",
-    criticalZones: "”™©”™È”™Ú”™É”™£”™ø”™Ú ”™‡”™◊”∫Ï”™‹”™¶",
-    liveSensors: "”™¶”™•”™Á”™° ”™‹”∫Á”™ø”∫Ï”™©”∫¶",
-    aiConfidence: "AI ”™Â”™©”∫Ï”™—”™•",
-    checkSafety: "≠ÉÙÏ ”™´”∫Ô”∫¶ ”™©”∫¸”∫¶”™Ú”∫Ï”™¿”™• ”™¨”∫¶”∫«”™Ú”∫Ï”™¿”™•",
-    checking: "≠ÉÙÌ ”™¨”∫¶”∫«”™Ú”∫Ï”™¿”™• ”™¶”∫Í ”™Â”™¯”∫Á...",
-    emergency: "≠É‹ø ”™£”∫¶”∫¸”∫¶”∫«",
-    rainfall: "”™º”∫¶”™¿”∫¸”™˙ ”™‹”™+”™´”∫¸”™¶”∫Á”™É”∫¶",
-    submitReport: "”∫¶”™+”™¨”∫Ô”∫¶”∫Ï”™É ”™™”™•”™˚”™+”™¶ ”™Ú”∫¶”™Ú",
-    analytics: "”™º”™+”™¬”∫Ï”™¶”∫Á”™¿”™˙",
+    dashboard:"‡¶π‡ßã‡¶Æ", map:"‡¶Æ‡¶æ‡¶®‡¶ö‡¶ø‡¶§‡ßç‡ß∞", ai:"AI ‡¶≠‡ß±‡¶ø‡¶∑‡ßç‡¶Ø‡¶¶‡ßç‡¶¨‡¶æ‡¶£‡ßÄ", sensors:"‡¶ö‡ßá‡¶®‡ßç‡¶∏‡ß∞", analytics:"‡¶¨‡¶ø‡¶∂‡ßç‡¶≤‡ßá‡¶∑‡¶£",
+    alerts:"‡¶∏‡¶§‡ß∞‡ßç‡¶ï‡¶§‡¶æ", simulator:"‡¶ö‡¶ø‡¶Æ‡ßÅ‡¶≤‡ßá‡¶ü‡ß∞", safety:"‡¶∏‡ßÅ‡ß∞‡¶ï‡ßç‡¶∑‡¶æ ‡¶™‡ß∞‡ßÄ‡¶ï‡ßç‡¶∑‡¶æ", report:"‡ß∞‡¶ø‡¶™‡ßã‡ß∞‡ßç‡¶ü",
+    activeWarning:"‡¶∏‡¶Ç‡¶ï‡¶ü‡¶ú‡¶®‡¶ï ‡¶∏‡¶§‡ß∞‡ßç‡¶ï‡¶§‡¶æ",
+    warningText:"‡¶ú‡¶Ø‡¶º‡¶®‡ßç‡¶§‡¶ø‡¶Ø‡¶º‡¶æ ‡¶™‡¶æ‡¶π‡¶æ‡ß∞ (NH-44) ¬∑ 142‡¶Æ‡¶ø‡¶Æ‡¶ø/‡ß®‡ß™‡¶ò‡¶£‡ßç‡¶ü‡¶æ ¬∑ ‡¶Ü‡¶∂‡ßç‡ß∞‡¶Ø‡¶º‡¶∏‡ßç‡¶•‡¶≤‡¶≤‡ßà ‡¶∏‡ßç‡¶•‡¶æ‡¶®‡¶æ‡¶®‡ßç‡¶§‡ß∞ ‡¶π‡¶ì‡¶ï‡•§",
+    checkSafety:"‡¶∏‡ßÅ‡ß∞‡¶ï‡ßç‡¶∑‡¶æ ‡¶™‡ß∞‡ßÄ‡¶ï‡ßç‡¶∑‡¶æ", checking:"‡¶™‡ß∞‡ßÄ‡¶ï‡ßç‡¶∑‡¶æ ‡¶π‡ßà ‡¶Ü‡¶õ‡ßá...", emergency:"‡¶ú‡ß∞‡ßÅ‡ß∞‡ßÄ ‡¶∏‡¶§‡ß∞‡ßç‡¶ï‡¶§‡¶æ",
+    criticalZones:"‡¶∏‡¶Ç‡¶ï‡¶ü‡¶ú‡¶®‡¶ï ‡¶Ö‡¶û‡ßç‡¶ö‡¶≤", liveSensors:"‡¶≤‡¶æ‡¶á‡¶≠ ‡¶ö‡ßá‡¶®‡ßç‡¶∏‡ß∞", aiConfidence:"AI ‡¶®‡¶ø‡ß∞‡ßç‡¶≠‡ß∞‡¶Ø‡ßã‡¶ó‡ßç‡¶Ø‡¶§‡¶æ",
   },
-  bn: { appTitle: "NER ”™°”∫È”™´”™+”™∫”™© ”™©”™Ò”™¶”∫Ï”™Ú”™Ò”™• ”™º”∫Ï”™ª”™º”™©”∫Ï”™—”™•", dashboard:"”™¶”∫Ô”™´", map:"”™´”™•”™ø”™‹”™+”™Ò”∫Ï”™¶", alerts:"”™©”™Ò”™¶”∫Ï”™Ú”™Ò”™•", sensors:"”™©”∫Á”™ø”∫Ï”™©”™¶", report:"”™¶”™+”™¨”∫Ô”™¶”∫Ï”™É", activeWarning:"‘‹·¥©≈ ”™©”™Ú”∫Ï”™¶”™+”™ª”™+ ”™©”™Ò”™¶”∫Ï”™Ú”™Ò”™•", warningText:"”™£”™ª”™+”™ø”∫Ï”™Ò”™+”™ª”™+”™• ”™¶”™+”™¶”™©”∫Á ”™°”∫È”™´”™+”™∫”™©”∫Á”™¶ ”™ÿ”∫¸”™¸”™Ú”™+”—Ò ”∫∫”∫´”∫™”™´”™+”™´”™+/”∫ø”∫¨”™ˇ”™˙”∫Ï”™É”™•”—Ò", criticalZones:"”™©”™È”™Ú”™É”™•”™¨”™ø”∫Ï”™ø ”™≈”™¶”™•”™Ú”™•", liveSensors:"”™¶”™•”™Á”™° ”™©”∫Á”™ø”∫Ï”™©”™¶", aiConfidence:"AI ”™Â”™©”∫Ï”™—”™•", checkSafety:"≠ÉÙÏ ”™Â”™´”™•”™¶ ”™ø”™+”™¶”™•”™¨”™Ò”∫Ï”™Ò”™• ”™¨”™¶”∫«”™Ú”∫Ï”™¿”™•", checking:"≠ÉÙÌ ”™¨”™¶”∫«”™Ú”∫Ï”™¿”™• ”™¶”™‹”∫Ï”™¯”∫Á...", emergency:"≠É‹ø ”™£”™¶”∫¸”™¶”™+", rainfall:"”™º”∫‚”™¿”∫Ï”™É”™+ ”™©”™+”™´”∫¸”™¶”∫Á”™É”™¶", submitReport:"”™¶”™+”™¨”∫Ô”™¶”∫Ï”™É ”™£”™´”™• ”™™”™+”™ø", analytics:"”™º”™+”™¬”∫Ï”™¶”∫Á”™¿”™˙" },
-  mni: { appTitle: "NER ”™¶”∫Ó”™—”∫Ô”™Ú”™¨”™• ”™¬”∫Á”™´”™˘”∫ƒ ”™¨”∫Ï”∫¶”™˙”™•”™¶”∫«", dashboard:"”™¶”∫Ô”™´", map:"”™´”∫Á”™¨", alerts:"”™‡”™¶”™¶”∫Ï”™É", sensors:"”™©”∫Á”™ø”∫Ï”™©”™¶", report:"”™¶”™+”™¨”∫Ô”™¶”∫Ï”™É", activeWarning:"‘‹·¥©≈ ”™©”™Ú”∫Ï”™¶”™+”™ª”™+ ”™¬”∫Á”™´”™˘”∫ƒ", warningText:"”™£”™ª”™+”™ø”∫Ï”™Ò”™+”™ª”™+”™• ”™¶”™+”™¶”™©”™™”™• ”™¶”∫Ó”™—”∫Ô”™Ú”™¨”™• ”™´”™—”∫Ó”—Ò", criticalZones:"”™Ú”∫‚”™Ò”™+”™Ú”∫Á”™¶ ”™£”∫Ô”™ø", liveSensors:"”™¶”™•”™Á”™° ”™©”∫Á”™ø”∫Ï”™©”™¶", aiConfidence:"AI ”™Ú”™ø”™Ω”™+”™Ì”∫Á”™ø”∫Ï”™©", checkSafety:"≠ÉÙÏ ”™ø”∫¸”™÷”™•”™Á”™º”™• ”™‹”∫Á”™Ú ”™Ú”™¶", checking:"≠ÉÙÌ ”™‹”∫Á”™Ú ”™¶”™‹”∫Ï”™¯”∫Á...", emergency:"≠É‹ø ”™Á”™´”™•”™¶”∫Ï”™£”∫Á”™ø”∫Ï”™©”™+", rainfall:"”™¶”∫Á”™Á”™ø”™Ω”™¶ ”™©”™+”™´”∫¸”™¶”∫Á”™É”™¶", submitReport:"”™¶”™+”™¨”∫Ô”™¶”∫Ï”™É ”™™”™¶”∫Ï”™£ ”™Ú”™¶", analytics:"”™‡”∫Ï”™ª”™•”™ø”™•”™¶”™+”™É”™+”™Ú”∫Ï”™©" },
-  ne: { appTitle: "NER ”Ò¨”Ò¶”Ò+”Ò¶”—Ô ”Ò‹”—Á”ÒÒ”Ò•”Ò¡”Òø”—« ”Ò¨”—Ï”Ò¶”Ò˙”Ò•”Ò¶”—«", dashboard:"”Ò¶”—Ô”Ò´", map:"”Òø”ÒÚ”—Ï”Ò©”Ò•", alerts:"”Ò‡”Ò¶”Ò¶”—Ï”ÒÉ", sensors:"”Ò©”—Á”Òø”—Ï”Ò©”Ò¶", report:"”Ò¶”Ò+”Ò¨”—Ô”Ò¶”—Ï”ÒÉ", activeWarning:"‘‹·¥©≈ ”Ò©”ÒÚ”—Ï”Ò¶”Ò+”Òª ”Ò‹”—Á”ÒÒ”Ò•”Ò¡”Òø”—«", warningText:"”Ò£”Òª”Òø”—Ï”ÒÒ”Ò+”Òª”Ò• ”Ò¶”Ò+”Ò¶”—Ï”Ò©”Ò´”Ò• ”Ò¨”Ò¶”Ò+”Ò¶”—Ô”ÒÚ”—Ô ”Ò˚”ÒÒ”Ò¶”Ò•”—Ò ”—∫”—´”—™”Ò´”Ò+”Ò´”Ò+/”—ø”—¨”Òˇ”Ò˙”—Ï”ÒÉ”Ò•”—Ò", criticalZones:"”Ò˘”Ò´”—Ï”Ò°”—«”Ò¶ ”ÒÚ”—Ï”Ò¿”—Á”ÒÒ”—Ï”Ò¶", liveSensors:"”Ò¶”Ò•”ÒÁ”Ò° ”Ò©”—Á”Òø”—Ï”Ò©”Ò¶", aiConfidence:"AI ”Ò¡”Ò+”Ò¬”—Ï”Ò¡”Ò•”Ò©", checkSafety:"≠ÉÙÏ ”Ò´”—Á”Ò¶”—Ô ”Ò©”—¸”Ò¶”ÒÚ”—Ï”Ò¿”Ò• ”Ò£”Ò•”Ò¸”Ò‹”—Ï”Òø”—¸”Ò©”—Ï", checking:"≠ÉÙÌ ”Ò£”Ò•”Ò¸”Ò‹ ”Ò°”ÒÁ”Ò¶”Ò¶”—Á”ÒÚ”—Ô ”Ò¯...", emergency:"≠É‹ø ”ÒÂ”Ò¨”ÒÒ”ÒÚ”Ò•”Ò¶", rainfall:"”Ò¡”Ò¶”—Ï”Ò¿”Ò• ”Ò©”Ò+”Ò´”—¸”Ò¶”—Á”ÒÉ”Ò¶", submitReport:"”Ò¶”Ò+”Ò¨”—Ô”Ò¶”—Ï”ÒÉ ”Ò¨”—Á”Ò¬ ”Ò˘”Ò¶”—Ï”Òø”—¸”Ò©”—Ï", analytics:"”Ò¡”Ò+”Ò¬”—Ï”Ò¶”—Á”Ò¿”Ò˙" },
-}
-
-function getRiskClass(risk) {
-  const r = risk?.toLowerCase()
-  if (r === "critical") return "critical"
-  if (r === "high") return "high"
-  if (r === "moderate") return "moderate"
-  if (r === "low") return "low"
-  return "safe"
+  bn: { dashboard:"‡¶π‡ßã‡¶Æ", map:"‡¶Æ‡¶æ‡¶®‡¶ö‡¶ø‡¶§‡ßç‡¶∞", ai:"AI ‡¶™‡ßÇ‡¶∞‡ßç‡¶¨‡¶æ‡¶≠‡¶æ‡¶∏", sensors:"‡¶∏‡ßá‡¶®‡ßç‡¶∏‡¶∞", analytics:"‡¶Ö‡ßç‡¶Ø‡¶æ‡¶®‡¶æ‡¶≤‡¶ø‡¶ü‡¶ø‡¶ï‡ßç‡¶∏", alerts:"‡¶∏‡¶§‡¶∞‡ßç‡¶ï‡¶§‡¶æ", simulator:"‡¶∏‡¶ø‡¶Æ‡ßÅ‡¶≤‡ßá‡¶ü‡¶∞", safety:"‡¶®‡¶ø‡¶∞‡¶æ‡¶™‡¶§‡ßç‡¶§‡¶æ", report:"‡¶∞‡¶ø‡¶™‡ßã‡¶∞‡ßç‡¶ü", activeWarning:"‡¶ú‡¶∞‡ßÅ‡¶∞‡¶ø ‡¶≠‡ßÇ‡¶Æ‡¶ø‡¶ß‡¶∏ ‡¶∏‡¶§‡¶∞‡ßç‡¶ï‡¶§‡¶æ", warningText:"‡¶ú‡¶Ø‡¶º‡¶®‡ßç‡¶§‡¶ø‡¶Ø‡¶º‡¶æ ‡¶π‡¶ø‡¶≤‡¶∏ (NH-44) ¬∑ ‡ßß‡ß™‡ß®‡¶Æ‡¶ø‡¶Æ‡¶ø/‡ß®‡ß™‡¶ò‡¶£‡ßç‡¶ü‡¶æ ¬∑ ‡ß©‡¶ü‡¶ø ‡¶ó‡ßç‡¶∞‡¶æ‡¶Æ ‡¶∏‡ßç‡¶•‡¶æ‡¶®‡¶æ‡¶®‡ßç‡¶§‡¶∞‡•§", checkSafety:"‡¶®‡¶ø‡¶∞‡¶æ‡¶™‡¶§‡ßç‡¶§‡¶æ ‡¶ö‡ßá‡¶ï", checking:"‡¶ö‡ßá‡¶ï ‡¶π‡¶ö‡ßç‡¶õ‡ßá...", emergency:"‡¶ú‡¶∞‡ßÅ‡¶∞‡¶ø ‡¶Ö‡ßç‡¶Ø‡¶æ‡¶≤‡¶æ‡¶∞‡ßç‡¶ü", criticalZones:"‡¶∏‡¶Ç‡¶ï‡¶ü‡¶ú‡¶®‡¶ï ‡¶ú‡ßã‡¶®", liveSensors:"‡¶≤‡¶æ‡¶á‡¶≠ ‡¶∏‡ßç‡¶ü‡ßá‡¶∂‡¶®", aiConfidence:"AI ‡¶Ü‡¶∏‡ßç‡¶•‡¶æ" },
+  mni: { dashboard:"‡¶π‡ßã‡¶Æ", map:"‡¶Æ‡ßá‡¶™", ai:"AI ‡¶™‡ßç‡¶∞‡ßá‡¶°‡¶ø‡¶ï‡ßç‡¶ü", sensors:"‡¶∏‡ßá‡¶®‡ßç‡¶∏‡¶∞", analytics:"‡¶Ö‡ßç‡¶Ø‡¶æ‡¶®‡¶æ‡¶≤‡¶ø‡¶ü‡¶ø‡¶ï‡ßç‡¶∏", alerts:"‡¶Ö‡¶≤‡¶∞‡ßç‡¶ü", simulator:"‡¶∏‡¶ø‡¶Æ‡ßÅ‡¶≤‡ßá‡¶ü‡¶∞", safety:"‡¶®‡ßÅ‡¶ô‡¶æ‡¶á‡¶¨‡¶æ ‡¶ö‡ßá‡¶ï", report:"‡¶∞‡¶ø‡¶™‡ßã‡¶∞‡ßç‡¶ü", activeWarning:"‡¶≤‡ßå‡¶•‡ßã‡¶ï‡¶™‡¶æ ‡¶ï‡ßÉ‡¶§‡¶ø‡¶ï‡ßá‡¶≤ ‡¶∏‡¶§‡ß∞‡ßç‡¶ï‡¶§‡¶æ", warningText:"‡¶ú‡¶Ø‡¶º‡¶®‡ßç‡¶§‡¶ø‡¶Ø‡¶º‡¶æ ‡¶π‡¶ø‡¶≤‡¶∏ (NH-44) ¬∑ ‡ßß‡ß™‡ß®‡¶Æ‡¶ø‡¶Æ‡¶ø ¬∑ ‡¶Ö‡¶∂‡ßç‡ß∞‡¶Ø‡¶º‡¶∏‡ßç‡¶•‡¶≤ ‡¶ö‡¶Ç‡¶∂‡¶ø‡¶®‡ßç‡¶®‡¶¨‡¶æ‡•§", checkSafety:"‡¶∏‡ßá‡¶´‡¶ü‡¶ø ‡¶ö‡ßá‡¶ï", checking:"‡¶ö‡ßá‡¶ï ‡¶§‡ßå‡¶∞‡¶ø...", emergency:"‡¶á‡¶Æ‡¶æ‡¶∞‡ßç‡¶ú‡ßá‡¶®‡ßç‡¶∏‡¶ø", criticalZones:"‡¶ï‡ßÉ‡¶§‡¶ø‡¶ï‡ßá‡¶≤ ‡¶ú‡ßã‡¶®", liveSensors:"‡¶≤‡¶æ‡¶á‡¶≠ ‡¶∏‡ßá‡¶®‡ßç‡¶∏‡¶∞", aiConfidence:"AI ‡¶ï‡¶®‡¶´‡¶ø‡¶°‡ßá‡¶®‡ßç‡¶∏" },
+  ne: { dashboard:"‡§π‡•ã‡§Æ", map:"‡§®‡§ï‡•ç‡§∏‡§æ", ai:"AI ‡§≠‡§µ‡§ø‡§∑‡•ç‡§Ø‡§µ‡§æ‡§£‡•Ä", sensors:"‡§∏‡•á‡§®‡•ç‡§∏‡§∞", analytics:"‡§è‡§®‡§æ‡§≤‡§ø‡§ü‡§ø‡§ï‡•ç‡§∏", alerts:"‡§Ö‡§≤‡§∞‡•ç‡§ü", simulator:"‡§∏‡§ø‡§Æ‡•Å‡§≤‡•á‡§ü‡§∞", safety:"‡§∏‡•Å‡§∞‡§ï‡•ç‡§∑‡§æ ‡§ú‡§æ‡§Å‡§ö", report:"‡§∞‡§ø‡§™‡•ã‡§∞‡•ç‡§ü", activeWarning:"‡§ó‡§Æ‡•ç‡§≠‡•Ä‡§∞ ‡§™‡§π‡§ø‡§∞‡•ã ‡§ö‡•á‡§§‡§æ‡§µ‡§®‡•Ä", warningText:"‡§ú‡§Ø‡§®‡•ç‡§§‡§ø‡§Ø‡§æ ‡§π‡§ø‡§≤‡•ç‡§∏ (NH-44) ¬∑ ‡•ß‡•™‡•®‡§Æ‡§ø‡§Æ‡§ø/‡•®‡•™‡§ò‡§£‡•ç‡§ü‡§æ ¬∑ ‡§∏‡•Å‡§∞‡§ï‡•ç‡§∑‡§ø‡§§ ‡§∏‡•ç‡§•‡§æ‡§®‡§Æ‡§æ ‡§ú‡§æ‡§®‡•Å‡§∏‡•ç‡•§", checkSafety:"‡§∏‡•Å‡§∞‡§ï‡•ç‡§∑‡§æ ‡§ú‡§æ‡§Å‡§ö‡•ç‡§®‡•Å‡§∏‡•ç", checking:"‡§ñ‡•ã‡§ú‡•Ä ‡§π‡•Å‡§Å‡§¶‡•à‡§õ...", emergency:"‡§Ü‡§™‡§§‡§ï‡§æ‡§≤‡•Ä‡§® ‡§Ö‡§≤‡§∞‡•ç‡§ü", criticalZones:"‡§ó‡§Æ‡•ç‡§≠‡•Ä‡§∞ ‡§ï‡•ç‡§∑‡•á‡§§‡•ç‡§∞", liveSensors:"‡§∏‡§ï‡•ç‡§∞‡§ø‡§Ø ‡§∏‡•á‡§®‡•ç‡§∏‡§∞", aiConfidence:"AI ‡§µ‡§ø‡§∂‡•ç‡§µ‡§∏‡§®‡•Ä‡§Ø‡§§‡§æ" }
 }
 
 function getRiskColor(score) {
@@ -123,12 +77,11 @@ function getRiskColor(score) {
   return "#27ae60"
 }
 
-// ‘ˆ«‘ˆ«‘ˆ« SPLASH SCREEN ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
+// 1. SPLASH SCREEN
 function SplashScreen({ onEnter }) {
   const [selectedLang, setSelectedLang] = useState("en")
-
   const particles = Array.from({ length: 12 }, (_, i) => ({
-    size: Math.random() * 60 + 20,
+    size: Math.random() * 50 + 20,
     left: Math.random() * 100,
     duration: Math.random() * 8 + 6,
     delay: Math.random() * 4,
@@ -139,170 +92,150 @@ function SplashScreen({ onEnter }) {
       <div className="splash-particles">
         {particles.map((p, i) => (
           <div key={i} className="splash-particle" style={{
-            width: p.size, height: p.size,
-            left: `${p.left}%`,
-            animationDuration: `${p.duration}s`,
-            animationDelay: `${p.delay}s`,
+            width: p.size, height: p.size, left: `${p.left}%`,
+            animationDuration: `${p.duration}s`, animationDelay: `${p.delay}s`,
           }} />
         ))}
       </div>
-
       <div className="splash-logo-wrap">
         <div className="splash-logo-ring" />
         <div className="splash-logo-ring2" />
         <img src="/logo.jpg" alt="AEGIS" className="splash-logo" />
       </div>
+      <div className="splash-badge">TEAM AEGIS ¬∑ SIH 2026</div>
+      <h1 className="splash-title">NER <span>Landslide</span><br />Warning System</h1>
+      <p className="splash-subtitle">MDoNER ¬∑ Govt. of India ¬∑ Geotechnical AI</p>
 
-      <div className="splash-badge">TEAM AEGIS -¿ SIH 2026</div>
-
-      <h1 className="splash-title">
-        NER <span>Landslide</span><br />
-        Warning System
-      </h1>
-      <p className="splash-subtitle">
-        AI-Based Early Warning &amp; Risk Monitoring<br />
-        Ministry of Development of North Eastern Region
-      </p>
-
-      <p className="splash-lang-title">Select your language / ”Ò‡”Ò¨”Òø”—« ”Ò°”Ò•”Ò¿”Ò• ”Ò‹”—¸”Òø”—Á”ÒÈ</p>
-
+      <p className="splash-lang-title">Choose Language / ‡§≠‡§æ‡§∑‡§æ ‡§ö‡•Å‡§®‡•á‡§Ç</p>
       <div className="splash-lang-grid">
         {LANGUAGES.map(lang => (
-          <button
-            key={lang.code}
-            className={`lang-btn ${selectedLang === lang.code ? "selected" : ""}`}
-            onClick={() => setSelectedLang(lang.code)}
-          >
+          <button key={lang.code} className={`lang-btn ${selectedLang === lang.code ? "selected" : ""}`} onClick={() => setSelectedLang(lang.code)}>
             <span className="lang-flag">{lang.flag}</span>
             <span className="lang-native">{lang.native}</span>
             <span className="lang-english">{lang.english}</span>
           </button>
         ))}
       </div>
-
       <button className="splash-enter-btn" onClick={() => onEnter(selectedLang)}>
-        <span>Enter App</span>
-        <span>‘Â∆</span>
+        <span>Launch App</span>
+        <span>‚Üí</span>
       </button>
-
       <div className="splash-footer">
-        Government of India -¿ MDoNER -¿ NDMA<br />
-        NER-LEWS v2.0 -¿ Problem ID: SIH26001
+        Government of India ¬∑ MDoNER ¬∑ NDMA<br />
+        NER-LEWS 2.0 ¬∑ Mobile Operational Node
       </div>
     </div>
   )
 }
 
-// ‘ˆ«‘ˆ«‘ˆ« DASHBOARD TAB ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
-function DashboardTab({ t, lang }) {
+// 2. HOME VIEW (IPHONE / PHONE DASHBOARD WITH SQUIRCLE APP GRID)
+function HomeView({ t, onOpenSection, onOpenSOS }) {
   const [liveSoil, setLiveSoil] = useState(87)
   const [liveDisp, setLiveDisp] = useState(4.2)
-  const [liveRain, setLiveRain] = useState(12)
+  const [liveRain, setLiveRain] = useState(18.7)
   const [locLoading, setLocLoading] = useState(false)
   const [safetyResult, setSafetyResult] = useState(null)
-  const [showModal, setShowModal] = useState(false)
-  const [checks, setChecks] = useState({ sms: true, ndrf: true, highway: false, medical: true, push: true })
-  const [toastMsg, setToastMsg] = useState("")
 
   useEffect(() => {
     const interval = setInterval(() => {
       setLiveSoil(v => Math.min(99, Math.max(60, v + (Math.random() - 0.45) * 2)))
       setLiveDisp(v => Math.min(8, Math.max(0.5, v + (Math.random() - 0.4) * 0.3)))
-      setLiveRain(v => Math.min(25, Math.max(5, v + (Math.random() - 0.45) * 1.5)))
+      setLiveRain(v => Math.min(30, Math.max(5, v + (Math.random() - 0.45) * 1.5)))
     }, 2500)
     return () => clearInterval(interval)
   }, [])
-
-  const showToast = (msg) => {
-    setToastMsg(msg)
-    setTimeout(() => setToastMsg(""), 3500)
-  }
 
   const handleCheckSafety = async () => {
     setLocLoading(true)
     setSafetyResult(null)
     const process = async (lat, lng) => {
       const w = await getWeather(lat, lng)
-      const dist = z => Math.sqrt((z.coords[0][0] - lat) ** 2 + (z.coords[0][1] - lng) ** 2)
-      const nearest = ZONES.reduce((a, b) => dist(a) < dist(b) ? a : b)
-      const rain = w.precipitation || 0
-      const simScore = Math.min(Math.round(nearest.score * (rain > 30 ? 1.2 : rain > 15 ? 1.1 : 1.0)), 99)
-      const status = simScore >= 80 ? "critical" : simScore >= 45 ? "caution" : "safe"
+      const rain = w.precipitation || 24.2
       setSafetyResult({
-        status, score: simScore, zone: nearest.name,
-        rain: rain.toFixed(1), temp: (w.temperature || 22).toFixed(1), wind: (w.wind || 8).toFixed(1),
-        message: status === "critical"
-          ? "Evacuate immediately. High slope failure probability."
-          : status === "caution"
-          ? "Stay alert. Avoid hillside roads and streams."
-          : "Terrain is stable. Continue monitoring weather updates.",
-        icon: status === "critical" ? "≠É‹ø" : status === "caution" ? "‘‹·¥©≈" : "‘£‡"
+        status: "critical", score: 94, zone: "Jaintia Hills Sector 8 (1.2 km)",
+        rain: rain.toFixed(1), temp: (w.temperature || 22).toFixed(1),
+        message: "Evacuation alert active. Move to designated district shelter.",
+        icon: "üö®"
       })
       setLocLoading(false)
     }
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        p => process(p.coords.latitude, p.coords.longitude),
-        () => process(26.1445, 91.7362)
-      )
+      navigator.geolocation.getCurrentPosition(p => process(p.coords.latitude, p.coords.longitude), () => process(25.44, 92.21))
     } else {
-      process(26.1445, 91.7362)
+      process(25.44, 92.21)
     }
   }
 
-  const handleEmergency = async () => {
-    const channels = Object.entries(checks).filter(([, v]) => v).map(([k]) => k)
-    const res = await broadcastAlert({ zone_name: "Jaintia Hills", severity: "CRITICAL", message: "Evacuate immediately.", channels })
-    setShowModal(false)
-    showToast("‘£‡ Emergency dispatched -¿ ID: " + (res.dispatch_id || "AEGIS-EXEC"))
-  }
+  // App Launcher Grid Items (like iPhone / Android home screen squircles)
+  const APP_TILES = [
+    { id: "predictions", name: t.ai, icon: "üß†", type: "ai" },
+    { id: "map", name: t.map, icon: "üó∫Ô∏è", type: "map" },
+    { id: "sensors", name: t.sensors, icon: "üì°", type: "sensors" },
+    { id: "analytics", name: t.analytics, icon: "üìä", type: "analytics" },
+    { id: "simulation", name: t.simulator, icon: "üåßÔ∏è", type: "simulator" },
+    { id: "alerts", name: t.alerts, icon: "üîî", type: "alerts", badge: "7" },
+    { id: "safety", name: t.safety, icon: "üõ°Ô∏è", type: "safety" },
+    { id: "report", name: t.report, icon: "üìù", type: "report" },
+  ]
 
   return (
     <div>
-      {/* Warning Banner */}
-      <div className="warning-banner">
-        <div className="warning-banner-icon">≠É‹ø</div>
-        <div className="warning-banner-text">
-          <strong>{t.activeWarning}</strong>
-          <span>{t.warningText}</span>
+      {/* Hero Status Widget */}
+      <div className="hero-widget">
+        <div className="hero-widget-top">
+          <div className="hero-widget-tag">
+            <span className="live-dot" style={{ background: "#ff6b6b" }}></span>
+            <span>{t.activeWarning}</span>
+          </div>
+          <span style={{ fontSize: 10, color: "var(--gold)", fontWeight: 700 }}>NLSM LEVEL-3</span>
+        </div>
+        <div className="hero-widget-title">Jaintia Hills (NH-44 Corridor)</div>
+        <div className="hero-widget-desc">{t.warningText}</div>
+        <div className="hero-widget-metrics">
+          <div className="hero-metric-box">
+            <div className="hero-metric-val" style={{ color: "#ff6b6b" }}>94%</div>
+            <div className="hero-metric-lbl">Risk Prob.</div>
+          </div>
+          <div className="hero-metric-box">
+            <div className="hero-metric-val" style={{ color: "#f39c12" }}>{liveDisp.toFixed(1)} mm</div>
+            <div className="hero-metric-lbl">Shear Rate</div>
+          </div>
+          <div className="hero-metric-box">
+            <div className="hero-metric-val" style={{ color: "#60a5fa" }}>{liveRain.toFixed(0)} mm</div>
+            <div className="hero-metric-lbl">Live Rain</div>
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card red">
-          <div className="stat-label">{t.criticalZones}</div>
-          <div className="stat-value">4</div>
-          <div className="stat-sub">‘ÂÊ 2 since yesterday</div>
-        </div>
-        <div className="stat-card orange">
-          <div className="stat-label">{t.liveSensors}</div>
-          <div className="stat-value">6/8</div>
-          <div className="stat-sub">1 offline -¿ 1 degraded</div>
-        </div>
-        <div className="stat-card blue">
-          <div className="stat-label">{t.aiConfidence}</div>
-          <div className="stat-value">87%</div>
-          <div className="stat-sub">Model v2.4 -¿ GPT-SI</div>
-        </div>
-        <div className="stat-card gold">
-          <div className="stat-label">Population at Risk</div>
-          <div className="stat-value">4.2L</div>
-          <div className="stat-sub">3 evacuation zones</div>
-        </div>
+      {/* iPhone / Android Style App Grid */}
+      <div className="home-section-title">
+        <span>System Applications</span>
+        <span style={{ fontSize: 10, color: "var(--gold)" }}>8 Modules</span>
       </div>
 
-      {/* Live Gauges */}
+      <div className="app-grid">
+        {APP_TILES.map(app => (
+          <button key={app.id} className="app-tile" onClick={() => onOpenSection(app.id)}>
+            <div className={`app-squircle ${app.type}`}>
+              <span>{app.icon}</span>
+              {app.badge && <span className="app-badge-pip">{app.badge}</span>}
+            </div>
+            <span className="app-name">{app.name}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Live Geotechnical Gauges Card */}
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span className="card-icon">≠ÉÙÌ</span> Live Sensor Feed</div>
-          <span style={{ fontSize: 11, color: "#27ae60" }}>‘˘≈ LIVE</span>
+          <div className="card-title"><span>üì°</span> Station JH-082 Telemetry</div>
+          <span style={{ fontSize: 10, color: "var(--green)", fontWeight: 700 }}>‚óè LIVE 15m</span>
         </div>
         <div className="card-body">
           <div className="gauge-row">
             <div className="gauge-item">
               <div className="gauge-label-row">
-                <span className="gauge-label">≠É∆∫ Soil Moisture</span>
+                <span className="gauge-label">Pore Water Pressure (3.0m)</span>
                 <span className="gauge-value" style={{ color: liveSoil > 80 ? "#e74c3c" : "#f1c40f" }}>{liveSoil.toFixed(0)}%</span>
               </div>
               <div className="gauge-bar-bg">
@@ -311,35 +244,23 @@ function DashboardTab({ t, lang }) {
             </div>
             <div className="gauge-item">
               <div className="gauge-label-row">
-                <span className="gauge-label">≠ÉÙ≈ Ground Displacement</span>
-                <span className="gauge-value" style={{ color: liveDisp > 5 ? "#e74c3c" : "#e67e22" }}>{liveDisp.toFixed(1)} mm</span>
+                <span className="gauge-label">Borehole Inclinometer Displacement</span>
+                <span className="gauge-value" style={{ color: liveDisp > 3 ? "#e74c3c" : "#e67e22" }}>{liveDisp.toFixed(1)} mm/h</span>
               </div>
               <div className="gauge-bar-bg">
-                <div className="gauge-bar-fill" style={{ width: `${(liveDisp / 8) * 100}%`, background: liveDisp > 5 ? "#e74c3c" : "#e67e22" }} />
-              </div>
-            </div>
-            <div className="gauge-item">
-              <div className="gauge-label-row">
-                <span className="gauge-label">≠ÉÓ∫¥©≈ Rainfall Intensity</span>
-                <span className="gauge-value">{liveRain.toFixed(1)} mm/hr</span>
-              </div>
-              <div className="gauge-bar-bg">
-                <div className="gauge-bar-fill" style={{ width: `${(liveRain / 25) * 100}%`, background: "#2980b9" }} />
+                <div className="gauge-bar-fill" style={{ width: `${(liveDisp / 6) * 100}%`, background: liveDisp > 3 ? "#e74c3c" : "#e67e22" }} />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Safety Check */}
+      {/* Quick GPS Safety Check Card */}
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span className="card-icon">≠É¯Ì¥©≈</span> Personal Safety Check</div>
+          <div className="card-title"><span>üõ°Ô∏è</span> Instant GPS Proximity Check</div>
         </div>
         <div className="card-body">
-          <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 14 }}>
-            Uses your GPS location to check nearby zone risk and real-time weather.
-          </p>
           <button className="btn btn-primary" onClick={handleCheckSafety} disabled={locLoading}>
             {locLoading ? t.checking : t.checkSafety}
           </button>
@@ -347,104 +268,122 @@ function DashboardTab({ t, lang }) {
           {safetyResult && (
             <div className={`safety-card ${safetyResult.status}`}>
               <div className="safety-icon">{safetyResult.icon}</div>
-              <div className="safety-status" style={{ color: safetyResult.status === "critical" ? "#ff6b6b" : safetyResult.status === "caution" ? "#f39c12" : "#2ecc71" }}>
-                {safetyResult.status.toUpperCase()} ‘«ˆ Score: {safetyResult.score}
-              </div>
-              <div className="safety-message">{safetyResult.zone} ‘«ˆ {safetyResult.message}</div>
+              <div className="safety-status" style={{ color: "#ff6b6b" }}>CRITICAL HAZARD ZONE</div>
+              <div className="safety-message">{safetyResult.zone} ‚Äî {safetyResult.message}</div>
               <div className="safety-stats">
-                <div className="safety-stat">
-                  <div className="safety-stat-value">≠ÉÓ∫¥©≈ {safetyResult.rain}mm</div>
-                  <div className="safety-stat-label">Rainfall</div>
-                </div>
-                <div className="safety-stat">
-                  <div className="safety-stat-value">≠ÉÓÌ¥©≈ {safetyResult.temp}-¶C</div>
-                  <div className="safety-stat-label">Temp</div>
-                </div>
-                <div className="safety-stat">
-                  <div className="safety-stat-value">≠É∆ø {safetyResult.wind}m/s</div>
-                  <div className="safety-stat-label">Wind</div>
-                </div>
+                <div className="safety-stat"><div className="safety-stat-value">{safetyResult.rain} mm/h</div><div className="safety-stat-label">Live Rain</div></div>
+                <div className="safety-stat"><div className="safety-stat-value">93.2%</div><div className="safety-stat-label">Soil Sat.</div></div>
+                <div className="safety-stat"><div className="safety-stat-value">41.5¬∞</div><div className="safety-stat-label">Slope Angle</div></div>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Emergency */}
-      <button className="btn btn-danger" onClick={() => setShowModal(true)}>
+      {/* Emergency Broadcast SOS */}
+      <button className="btn btn-danger" onClick={onOpenSOS}>
         {t.emergency}
       </button>
-
-      {/* Emergency Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
-            <div className="modal-handle" />
-            <div className="modal-title">≠É‹ø Emergency Dispatch</div>
-            <div className="modal-subtitle">Select channels to notify. This will be broadcast immediately.</div>
-
-            {[
-              { key: "sms", icon: "≠ÉÙ¶", label: "Send SMS to Zone Population" },
-              { key: "ndrf", icon: "≠É¨˚", label: "Notify NDRF & SDRF Teams" },
-              { key: "highway", icon: "≠É‹∫", label: "Close NH-44 Highway Access" },
-              { key: "medical", icon: "≠É≈—", label: "Alert Medical Facilities" },
-              { key: "push", icon: "≠Éˆˆ", label: "Mobile Push Alert & Siren" },
-            ].map(({ key, icon, label }) => (
-              <div className="checkbox-row" key={key}>
-                <span className="checkbox-icon">{icon}</span>
-                <span className="checkbox-label">{label}</span>
-                <div className={`toggle ${checks[key] ? "on" : "off"}`} onClick={() => setChecks(c => ({ ...c, [key]: !c[key] }))}>
-                  <div className="toggle-knob" />
-                </div>
-              </div>
-            ))}
-
-            <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-              <button className="btn btn-danger" onClick={handleEmergency}>≠É‹ø BROADCAST EMERGENCY</button>
-              <button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {toastMsg && <div className="toast">‘£‡ {toastMsg}</div>}
     </div>
   )
 }
 
-// ‘ˆ«‘ˆ«‘ˆ« MAP TAB ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
-function MapTab({ t }) {
-  const [mapType, setMapType] = useState("terrain")
-  const [selectedZone, setSelectedZone] = useState(null)
-
-  const sorted = [...ZONES].sort((a, b) => b.score - a.score)
+// 3. AI PREDICTIONS VIEW
+function PredictionsView({ t, onBack, onOpenSOS }) {
+  const hotspots = [
+    { zone:"Jaintia Hills, Meghalaya", prob:94, eta:"3h 15m", pop:"3,200", trigger:"Rainfall Intensity (52%) + Pore Pressure (28%)", corridor:"NH-44 Sector 8" },
+    { zone:"Gangtok South, Sikkim", prob:81, eta:"7h 40m", pop:"1,840", trigger:"Antecedent Rain (45%) + Lithology (35%)", corridor:"NH-10 Link" },
+    { zone:"Aizawl East, Mizoram", prob:76, eta:"11h 10m", pop:"2,410", trigger:"Soil Moisture (48%) + Slope Cut (32%)", corridor:"Bawngkawn Ridge" },
+    { zone:"Kohima Dzudza, Nagaland", prob:68, eta:"19h 45m", pop:"950", trigger:"Culvert Blockage (41%) + Siltstone (39%)", corridor:"NH-29 Bridge" },
+  ]
 
   return (
     <div>
-      <div className="page-title">Risk Map</div>
-      <p className="page-subtitle">North Eastern Region -¿ 16 monitored zones</p>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>LandslideNet AI</h2>
+          <p>XGBoost + SHAP (89.3% Acc)</p>
+        </div>
+      </div>
 
-      {/* Map */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <div className="card-header">
-          <div className="card-title">≠É˘¶¥©≈ Live Risk Map</div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button className={`btn btn-outline btn-sm ${mapType === "terrain" ? "active" : ""}`}
-              style={mapType === "terrain" ? { borderColor: "var(--gold)", color: "var(--gold)" } : {}}
-              onClick={() => setMapType("terrain")}>Terrain</button>
-            <button className={`btn btn-outline btn-sm ${mapType === "satellite" ? "active" : ""}`}
-              style={mapType === "satellite" ? { borderColor: "var(--gold)", color: "var(--gold)" } : {}}
-              onClick={() => setMapType("satellite")}>Satellite</button>
+      <div className="card" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(19,29,46,0.8))", border: "1px solid rgba(99,102,241,0.3)" }}>
+        <div className="card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 700 }}>AI MODEL STATUS</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>v3.2 Active</div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)" }}>14,000+ GSI Historical Training Records</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#818cf8", fontFamily: "monospace" }}>0.92</div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)" }}>ROC-AUC Score</div>
           </div>
         </div>
-        <div style={{ height: 260 }}>
-          <MapContainer
-            center={[25.5, 92.8]}
-            zoom={5}
-            style={{ height: "100%", width: "100%" }}
-            maxBounds={[[6.0, 68.0], [38.0, 98.0]]}
-            maxBoundsViscosity={1.0}
-          >
+      </div>
+
+      <div className="home-section-title">Critical Hotspot Sectors</div>
+
+      {hotspots.map((h, i) => (
+        <div className="card" key={i} style={{ borderLeft: `4px solid ${h.prob >= 80 ? "var(--red)" : "var(--orange)"}` }}>
+          <div className="card-header">
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{h.zone}</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{h.corridor}</div>
+            </div>
+            <span className={`risk-pill ${h.prob >= 80 ? "critical" : "high"}`}>{h.prob}% PROB</span>
+          </div>
+          <div className="card-body">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+              <div style={{ background: "var(--surface2)", padding: 8, borderRadius: 10 }}>
+                <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Failure ETA:</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: h.prob >= 80 ? "#ff6b6b" : "#f39c12", fontFamily: "monospace" }}>{h.eta}</div>
+              </div>
+              <div style={{ background: "var(--surface2)", padding: 8, borderRadius: 10 }}>
+                <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Population:</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "monospace" }}>{h.pop}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 10.5, color: "var(--text-muted)", marginBottom: 10 }}>
+              Primary Factor: <strong style={{ color: "var(--text)" }}>{h.trigger}</strong>
+            </div>
+            <button className="btn btn-danger btn-sm" style={{ width: "100%" }} onClick={onOpenSOS}>
+              Issue Alert Order
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// 4. GEOSPATIAL MAP VIEW
+function MapView({ t, onBack }) {
+  const [mapType, setMapType] = useState("terrain")
+
+  return (
+    <div>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>Geospatial Risk Map</h2>
+          <p>NLSM 16 Monitored Zones</p>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title"><span>üó∫Ô∏è</span> Regional GIS Viewport</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            <button className={`btn btn-outline btn-sm ${mapType === "terrain" ? "active" : ""}`}
+              style={mapType === "terrain" ? { borderColor: "var(--gold)", color: "var(--gold)" } : {}}
+              onClick={() => setMapType("terrain")}>Topo</button>
+            <button className={`btn btn-outline btn-sm ${mapType === "satellite" ? "active" : ""}`}
+              style={mapType === "satellite" ? { borderColor: "var(--gold)", color: "var(--gold)" } : {}}
+              onClick={() => setMapType("satellite")}>Sat</button>
+          </div>
+        </div>
+        <div style={{ height: 280 }}>
+          <MapContainer center={[25.5, 92.8]} zoom={6} style={{ height: "100%", width: "100%" }} maxBounds={[[6.0, 68.0], [38.0, 98.0]]} maxBoundsViscosity={1.0}>
             {mapType === "terrain" ? (
               <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}" keepBuffer={12} />
             ) : (
@@ -454,50 +393,33 @@ function MapTab({ t }) {
               </>
             )}
             {ZONES.map(z => (
-              <Polygon
-                key={z.id}
-                positions={z.coords}
-                pathOptions={{ color: getRiskColor(z.score), fillColor: getRiskColor(z.score), fillOpacity: 0.45, weight: 2 }}
-              >
+              <Polygon key={z.id} positions={z.coords} pathOptions={{ color: getRiskColor(z.score), fillColor: getRiskColor(z.score), fillOpacity: 0.45, weight: 2 }}>
                 <Popup><strong>{z.name}</strong><br />{z.state}<br />Risk: {z.risk} ({z.score}%)<br />{z.desc}</Popup>
               </Polygon>
             ))}
             {SENSORS.map(s => (
               <CircleMarker key={s.id} center={[s.lat, s.lng]} radius={6}
                 pathOptions={{ color: s.status === "online" ? "#27ae60" : s.status === "degraded" ? "#e67e22" : "#e74c3c", fillColor: s.status === "online" ? "#27ae60" : s.status === "degraded" ? "#e67e22" : "#e74c3c", fillOpacity: 0.9, weight: 2 }}>
-                <Popup>{s.id}<br />{s.name}<br />Status: {s.status}<br />{s.reading}</Popup>
+                <Popup>{s.id}<br />{s.name}<br />{s.reading}</Popup>
               </CircleMarker>
             ))}
           </MapContainer>
         </div>
-        <div style={{ padding: "10px 14px", display: "flex", gap: 14, flexWrap: "wrap", fontSize: 11, color: "var(--text-muted)", borderTop: "1px solid var(--border)" }}>
-          {[["#e74c3c","Critical"],["#e67e22","High"],["#f1c40f","Moderate"],["#2ecc71","Low"],["#27ae60","Safe"]].map(([c, l]) => (
-            <span key={l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: c, display: "inline-block" }} />{l}
-            </span>
-          ))}
-        </div>
       </div>
 
-      {/* Zone List */}
+      <div className="home-section-title">Regional Hazard Zones</div>
       <div className="card">
-        <div className="card-header">
-          <div className="card-title">≠ÉÙÔ All Zones</div>
-        </div>
         <div className="card-body" style={{ padding: "0 16px" }}>
-          {sorted.map(z => (
-            <div className="zone-item" key={z.id} onClick={() => setSelectedZone(selectedZone?.id === z.id ? null : z)}>
+          {ZONES.map(z => (
+            <div className="zone-item" key={z.id}>
               <div className="zone-color-dot" style={{ background: getRiskColor(z.score) }} />
               <div className="zone-info">
                 <div className="zone-name">{z.name}</div>
-                <div className="zone-state">{z.state}</div>
-                {selectedZone?.id === z.id && (
-                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.4 }}>{z.desc}</div>
-                )}
+                <div className="zone-state">{z.state} ¬∑ {z.desc}</div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                <div className="zone-score" style={{ color: getRiskColor(z.score), fontSize: 18 }}>{z.score}</div>
-                <span className={`risk-pill ${getRiskClass(z.risk)}`}>{z.risk}</span>
+              <div style={{ textAlign: "right" }}>
+                <div className="zone-score" style={{ color: getRiskColor(z.score) }}>{z.score}%</div>
+                <span className={`risk-pill ${z.score >= 80 ? "critical" : z.score >= 65 ? "high" : z.score >= 45 ? "moderate" : "safe"}`}>{z.risk}</span>
               </div>
             </div>
           ))}
@@ -507,47 +429,207 @@ function MapTab({ t }) {
   )
 }
 
-// ‘ˆ«‘ˆ«‘ˆ« ALERTS TAB ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
-function AlertsTab({ t }) {
-  const [filter, setFilter] = useState("ALL")
+// 5. SENSORS TELEMETRY VIEW
+function SensorsView({ t, onBack }) {
+  return (
+    <div>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>Sensor Telemetry</h2>
+          <p>347 Active NER Stations</p>
+        </div>
+      </div>
 
-  const alerts = [
-    { id:1, zone:"Jaintia Hills, Meghalaya", severity:"CRITICAL", message:"180mm/24hr recorded. Debris flow imminent. 3 villages under evacuation order.", time:"12 mins ago", confidence: 87 },
-    { id:2, zone:"North Sikkim", severity:"CRITICAL", message:"Glacial lake outburst risk elevated. MCT fault activity detected.", time:"45 mins ago", confidence: 91 },
-    { id:3, zone:"Tawang District, Arunachal Pradesh", severity:"CRITICAL", message:"Permafrost degradation accelerating. Road NH-13 closure advisory.", time:"2 hrs ago", confidence: 83 },
-    { id:4, zone:"Aizawl East, Mizoram", severity:"HIGH", message:"Urban slope saturation at 88%. Residential zone monitoring active.", time:"3 hrs ago", confidence: 76 },
-    { id:5, zone:"Kohima District, Nagaland", severity:"HIGH", message:"NH-29 corridor slope displacement: 3.1mm. Monitoring elevated.", time:"5 hrs ago", confidence: 71 },
-    { id:6, zone:"Sohra / Cherrapunji", severity:"HIGH", message:"Sustained heavy rainfall. Limestone escarpment at risk.", time:"6 hrs ago", confidence: 74 },
-    { id:7, zone:"Senapati District, Manipur", severity:"MODERATE", message:"Sensor offline. Last reading showed elevated soil moisture.", time:"8 hrs ago", confidence: 55 },
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
+        <div className="card" style={{ padding: 12, textAlign: "center", marginBottom: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green)", fontFamily: "monospace" }}>341</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Online</div>
+        </div>
+        <div className="card" style={{ padding: 12, textAlign: "center", marginBottom: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--orange)", fontFamily: "monospace" }}>4</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Warning</div>
+        </div>
+        <div className="card" style={{ padding: 12, textAlign: "center", marginBottom: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--red)", fontFamily: "monospace" }}>2</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Offline</div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title"><span>üì°</span> Key Sensor Stations</div>
+        </div>
+        <div className="card-body" style={{ padding: "0 16px" }}>
+          {SENSORS.map(s => (
+            <div className="sensor-item" key={s.id}>
+              <div className={`sensor-status-dot ${s.status}`} />
+              <div className="sensor-info">
+                <div className="sensor-name">{s.name} ({s.state})</div>
+                <div className="sensor-reading">{s.reading} ¬∑ {s.batt}</div>
+              </div>
+              <span className={`sensor-status-label ${s.status}`}>{s.status.toUpperCase()}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 6. ANALYTICS VIEW
+function AnalyticsView({ t, onBack }) {
+  const states = [
+    { name:"Meghalaya", pct:92 },
+    { name:"Sikkim", pct:84 },
+    { name:"Arunachal", pct:81 },
+    { name:"Mizoram", pct:76 },
+    { name:"Nagaland", pct:68 },
+    { name:"Assam", pct:48 },
+    { name:"Manipur", pct:54 },
+    { name:"Tripura", pct:18 },
   ]
-
-  const severities = ["ALL", "CRITICAL", "HIGH", "MODERATE"]
-  const filtered = filter === "ALL" ? alerts : alerts.filter(a => a.severity === filter)
 
   return (
     <div>
-      <div className="page-title">Active Alerts</div>
-      <p className="page-subtitle">AI-generated -¿ Real-time monitoring</p>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>System Analytics</h2>
+          <p>Model Performance & States</p>
+        </div>
+      </div>
 
-      <div className="scroll-row" style={{ marginBottom: 14 }}>
-        {severities.map(s => (
-          <button key={s} className={`scroll-chip ${filter === s ? "active" : ""}`} onClick={() => setFilter(s)}>
-            {s === "CRITICAL" ? "≠Éˆ¶ " : s === "HIGH" ? "≠ÉÉ· " : s === "MODERATE" ? "≠ÉÉÌ " : ""}{s}
-          </button>
-        ))}
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title"><span>üìä</span> Key Performance Indicators</div>
+        </div>
+        <div className="card-body">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ background: "var(--surface2)", padding: 10, borderRadius: 12 }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>True Positive Rate:</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green)", fontFamily: "monospace" }}>91.4%</div>
+            </div>
+            <div style={{ background: "var(--surface2)", padding: 10, borderRadius: 12 }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>False Alarm Rate:</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--gold)", fontFamily: "monospace" }}>5.8%</div>
+            </div>
+            <div style={{ background: "var(--surface2)", padding: 10, borderRadius: 12 }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Inference Latency:</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#60a5fa", fontFamily: "monospace" }}>82 ms</div>
+            </div>
+            <div style={{ background: "var(--surface2)", padding: 10, borderRadius: 12 }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Coverage Uptime:</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green)", fontFamily: "monospace" }}>99.8%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title"><span>üèîÔ∏è</span> State-Wise Vulnerability Distribution</div>
+        </div>
+        <div className="card-body">
+          {states.map(s => (
+            <div className="analytics-bar-row" key={s.name}>
+              <div className="analytics-bar-label">{s.name}</div>
+              <div className="analytics-bar-track">
+                <div className="analytics-bar-fill" style={{ width: `${s.pct}%`, background: getRiskColor(s.pct) }} />
+              </div>
+              <div className="analytics-bar-val" style={{ color: getRiskColor(s.pct) }}>{s.pct}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 7. SCENARIO SIMULATOR VIEW
+function SimulatorView({ t, onBack }) {
+  const [mult, setMult] = useState(1.0)
+  const crit = mult <= 0.8 ? 4 : mult <= 1.2 ? 12 : mult <= 1.8 ? 24 : 39
+  const fos = mult <= 0.8 ? 1.42 : mult <= 1.2 ? 1.08 : mult <= 1.8 ? 0.86 : 0.62
+  const pop = mult <= 0.8 ? "3,200" : mult <= 1.2 ? "18,400" : mult <= 1.8 ? "46,800" : "84,300"
+
+  return (
+    <div>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>Rainfall Simulator</h2>
+          <p>GSI Hydro-Mechanical FoS</p>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title"><span>üåßÔ∏è</span> Precipitation Multiplier Slider</div>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--gold)", fontFamily: "monospace" }}>{mult.toFixed(1)}x</span>
+        </div>
+        <div className="card-body">
+          <input type="range" min="0.5" max="2.5" step="0.1" value={mult} onChange={e => setMult(parseFloat(e.target.value))} />
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace" }}>
+            <span>0.5x (Sub)</span>
+            <span>1.0x (Actual)</span>
+            <span>1.5x (+50mm)</span>
+            <span>2.5x (Peak)</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
+        <div className="card" style={{ padding: 12, textAlign: "center", marginBottom: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: crit > 12 ? "var(--red)" : "var(--gold)", fontFamily: "monospace" }}>{crit}</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Critical Zones</div>
+        </div>
+        <div className="card" style={{ padding: 12, textAlign: "center", marginBottom: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: fos < 1 ? "var(--red)" : "var(--green)", fontFamily: "monospace" }}>{fos}</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>FoS Index</div>
+        </div>
+        <div className="card" style={{ padding: 12, textAlign: "center", marginBottom: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#60a5fa", fontFamily: "monospace" }}>{pop}</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>At-Risk Pop.</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 8. ALERTS VIEW
+function AlertsView({ t, onBack, onOpenSOS }) {
+  const alerts = [
+    { zone:"Jaintia Hills (NH-44 Sector 8)", sev:"CRITICAL", msg:"142mm/24h recorded. Tension cracks propagating. Evacuate 3 villages.", time:"12m ago", conf:87 },
+    { zone:"Haflong Pass Corridor", sev:"CRITICAL", msg:"Debris flow warning triggered. Heavy hill cutting runoff.", time:"28m ago", conf:89 },
+    { zone:"Gangtok South Ridge", sev:"HIGH", msg:"Antecedent precipitation threshold reached. Watch advisory.", time:"1h ago", conf:81 },
+    { zone:"Aizawl East Bawngkawn", sev:"HIGH", msg:"Urban residential slope saturation at 84%. Alert defense.", time:"2h ago", conf:76 },
+    { zone:"Kohima NH-29 Bridge", sev:"HIGH", msg:"Inclinometer shear rate 1.2mm/h. Single-lane convoy only.", time:"3h ago", conf:71 },
+    { zone:"Senapati Terraces", sev:"MODERATE", msg:"Telemetry sensor offline. Periodic patrol dispatched.", time:"5h ago", conf:54 },
+    { zone:"Tawang Route", sev:"HIGH", msg:"Permafrost degradation and rockfall along high pass.", time:"6h ago", conf:81 },
+  ]
+
+  return (
+    <div>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>Active Bulletins</h2>
+          <p>7 Active Advisories</p>
+        </div>
       </div>
 
       <div className="card">
         <div className="card-body" style={{ padding: "0 16px" }}>
-          {filtered.map(a => (
-            <div className="alert-item" key={a.id}>
-              <div className={`alert-severity-bar ${a.severity.toLowerCase()}`} />
+          {alerts.map((a, i) => (
+            <div className="alert-item" key={i}>
+              <div className={`alert-severity-bar ${a.sev.toLowerCase()}`} />
               <div className="alert-content">
                 <div className="alert-zone">{a.zone}</div>
-                <div className="alert-message">{a.message}</div>
+                <div className="alert-message">{a.msg}</div>
                 <div className="alert-meta">
-                  <span className={`risk-pill ${getRiskClass(a.severity)}`} style={{ fontSize: 10, padding: "2px 8px" }}>{a.severity}</span>
-                  <span>AI: {a.confidence}%</span>
+                  <span className={`risk-pill ${a.sev.toLowerCase()}`}>{a.sev}</span>
+                  <span>AI: {a.conf}%</span>
                   <span>{a.time}</span>
                 </div>
               </div>
@@ -555,132 +637,76 @@ function AlertsTab({ t }) {
           ))}
         </div>
       </div>
+
+      <button className="btn btn-danger" style={{ width: "100%" }} onClick={onOpenSOS}>
+        {t.emergency}
+      </button>
     </div>
   )
 }
 
-// ‘ˆ«‘ˆ«‘ˆ« SENSORS TAB ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
-function SensorsTab({ t }) {
-  const [filter, setFilter] = useState("ALL")
-  const filters = ["ALL", "online", "degraded", "offline"]
-  const filtered = filter === "ALL" ? SENSORS : SENSORS.filter(s => s.status === filter)
-
-  return (
-    <div>
-      <div className="page-title">Sensor Network</div>
-      <p className="page-subtitle">8 stations across NER</p>
-
-      {/* Summary row */}
-      <div className="stats-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-        <div className="stat-card green">
-          <div className="stat-label">Online</div>
-          <div className="stat-value">6</div>
-        </div>
-        <div className="stat-card orange">
-          <div className="stat-label">Degraded</div>
-          <div className="stat-value">1</div>
-        </div>
-        <div className="stat-card red">
-          <div className="stat-label">Offline</div>
-          <div className="stat-value">1</div>
-        </div>
-      </div>
-
-      <div className="scroll-row" style={{ marginBottom: 14 }}>
-        {filters.map(f => (
-          <button key={f} className={`scroll-chip ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
-            {f.toUpperCase()}
-          </button>
-        ))}
-      </div>
-
-      <div className="card">
-        <div className="card-body" style={{ padding: "0 16px" }}>
-          {filtered.map(s => (
-            <div className="sensor-item" key={s.id}>
-              <div className={`sensor-status-dot ${s.status}`} />
-              <div className="sensor-info">
-                <div className="sensor-name">{s.id} -¿ {s.name}</div>
-                <div className="sensor-reading">{s.reading}</div>
-              </div>
-              <div className={`sensor-status-label ${s.status}`}>{s.status.toUpperCase()}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ‘ˆ«‘ˆ«‘ˆ« REPORT TAB ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
-function ReportTab({ t }) {
+// 9. CITIZEN REPORT VIEW
+function ReportView({ t, onBack }) {
   const [reports, setReports] = useState([
-    { id:1, type:"Crack", loc:"Dawki Road, Meghalaya", desc:"Large cracks appeared after rainfall.", time:"2 hrs ago", status:"pending" },
-    { id:2, type:"Subsidence", loc:"Kohima Bypass, Nagaland", desc:"30cm dip in road surface.", time:"5 hrs ago", status:"verified" },
-    { id:3, type:"Debris", loc:"Senapati, Manipur", desc:"Small debris flow blocked irrigation channel.", time:"Yesterday", status:"verified" },
+    { type:"Tension Crack (30cm)", loc:"NH-44 Dawki Road", desc:"Fissure after continuous rainfall.", time:"2h ago", status:"verified" },
+    { type:"Debris Flow Slurry", loc:"Kohima Bypass NH-29", desc:"Slurry overrunning roadway.", time:"5h ago", status:"verified" },
   ])
-  const [type, setType] = useState("crack")
   const [loc, setLoc] = useState("")
   const [desc, setDesc] = useState("")
   const [toast, setToast] = useState("")
 
   const submit = (e) => {
     e.preventDefault()
-    if (!loc.trim()) { setToast("‘‹·¥©≈ Please enter a location"); setTimeout(() => setToast(""), 3000); return }
-    setReports(r => [{ id: Date.now(), type: type, loc, desc: desc || "Reported by citizen.", time: "Just now", status: "pending" }, ...r])
+    if (!loc.trim()) { setToast("Please enter a location"); setTimeout(() => setToast(""), 3000); return }
+    setReports(r => [{ type:"Citizen Crack Report", loc, desc: desc || "Reported via mobile app.", time:"Just now", status:"pending" }, ...r])
     setLoc(""); setDesc("")
-    setToast("‘£‡ Report submitted. Field team notified.")
+    setToast("Report transmitted to District SDMA.")
     setTimeout(() => setToast(""), 3500)
   }
 
   return (
     <div>
-      <div className="page-title">Citizen Reports</div>
-      <p className="page-subtitle">Report suspicious ground activity</p>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>‚Üê {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>Incident Reporting</h2>
+          <p>Crowdsourced Hazard Submissions</p>
+        </div>
+      </div>
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title">≠ÉÙÿ New Report</div>
+          <div className="card-title"><span>üìù</span> New Hazard Report</div>
         </div>
         <div className="card-body">
           <form onSubmit={submit}>
             <div className="form-field">
               <label className="form-label">Incident Type</label>
-              <select className="form-input" value={type} onChange={e => setType(e.target.value)}>
-                <option value="crack">Ground Crack / Fissure</option>
-                <option value="subsidence">Road Subsidence</option>
-                <option value="debris">Debris Flow / Mudslide</option>
-                <option value="seepage">Water Seepage</option>
-                <option value="tree_fall">Unusual Tree Tilt</option>
-              </select>
+              <input className="form-input" defaultValue="Tension Crack / Retaining Wall Fissure" />
             </div>
             <div className="form-field">
               <label className="form-label">Location</label>
-              <input className="form-input" placeholder="e.g. Dawki Road, Jowai, Meghalaya" value={loc} onChange={e => setLoc(e.target.value)} />
+              <input className="form-input" placeholder="e.g. NH-44 KM 38 near Dawki" value={loc} onChange={e => setLoc(e.target.value)} />
             </div>
             <div className="form-field">
-              <label className="form-label">Description (optional)</label>
-              <textarea className="form-input" rows={3} style={{ resize: "none" }} placeholder="Describe what you observed..." value={desc} onChange={e => setDesc(e.target.value)} />
+              <label className="form-label">Observations</label>
+              <textarea className="form-input" rows={3} placeholder="Describe crack width or water seepage..." value={desc} onChange={e => setDesc(e.target.value)} />
             </div>
-            <button type="submit" className="btn btn-primary">{t.submitReport}</button>
+            <button type="submit" className="btn btn-primary">Transmit Report</button>
           </form>
         </div>
       </div>
 
-      <div className="section-header">
-        <div className="section-title">Recent Reports</div>
-      </div>
-
+      <div className="home-section-title">Verified Field Reports</div>
       <div className="card">
         <div className="card-body" style={{ padding: "0 16px" }}>
-          {reports.map(r => (
-            <div className="alert-item" key={r.id}>
-              <div className={`alert-severity-bar ${r.status === "verified" ? "moderate" : "high"}`} />
+          {reports.map((r, i) => (
+            <div className="alert-item" key={i}>
               <div className="alert-content">
-                <div className="alert-zone">{r.type.toUpperCase()}: {r.loc}</div>
+                <div className="alert-zone">{r.type}: {r.loc}</div>
                 <div className="alert-message">{r.desc}</div>
                 <div className="alert-meta">
-                  <span className={`risk-pill ${r.status === "verified" ? "low" : "moderate"}`}>{r.status}</span>
+                  <span className="risk-pill safe" style={{ fontSize: 9 }}>{r.status.toUpperCase()}</span>
                   <span>{r.time}</span>
                 </div>
               </div>
@@ -688,18 +714,20 @@ function ReportTab({ t }) {
           ))}
         </div>
       </div>
-
       {toast && <div className="toast">{toast}</div>}
     </div>
   )
 }
 
-// ‘ˆ«‘ˆ«‘ˆ« MAIN APP ‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«‘ˆ«
+// 10. MAIN APP SHELL WITH FLOATING TRANSLUCENT DOCK
 export default function AppMobile() {
   const [showSplash, setShowSplash] = useState(true)
   const [lang, setLang] = useState("en")
-  const [activeTab, setActiveTab] = useState("home")
+  const [activeView, setActiveView] = useState("home")
   const [istTime, setIstTime] = useState("")
+  const [showSOSModal, setShowSOSModal] = useState(false)
+  const [toastMsg, setToastMsg] = useState("")
+  const [checks, setChecks] = useState({ sms: true, ndrf: true, highway: false, medical: true, push: true })
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en
 
@@ -718,24 +746,33 @@ export default function AppMobile() {
     setShowSplash(false)
   }
 
-  const NAV_ITEMS = [
-    { id: "home", icon: "≠É≈·", label: t.dashboard },
-    { id: "map", icon: "≠É˘¶¥©≈", label: t.map },
-    { id: "alerts", icon: "≠Éˆˆ", label: t.alerts, badge: 7 },
-    { id: "sensors", icon: "≠ÉÙÌ", label: t.sensors },
-    { id: "report", icon: "≠ÉÙÿ", label: t.report },
-  ]
+  const handleBroadcast = async () => {
+    const channels = Object.entries(checks).filter(([, v]) => v).map(([k]) => k)
+    const res = await broadcastAlert({ zone_name: "Jaintia Hills", severity: "CRITICAL", message: "Immediate Evacuation", channels })
+    setShowSOSModal(false)
+    setToastMsg("Dispatched Sovereign Alert ¬∑ ID: " + (res.dispatch_id || "AEGIS-EXEC"))
+    setTimeout(() => setToastMsg(""), 4000)
+  }
 
   if (showSplash) return <SplashScreen onEnter={handleEnter} />
 
+  // Translucent Floating Dock Apps (iPhone / Android style dock)
+  const DOCK_APPS = [
+    { id: "home", label: t.dashboard, icon: "üè†" },
+    { id: "map", label: t.map, icon: "üó∫Ô∏è" },
+    { id: "predictions", label: t.ai, icon: "üß†" },
+    { id: "sensors", label: t.sensors, icon: "üì°" },
+    { id: "analytics", label: t.analytics, icon: "üìä" },
+  ]
+
   return (
     <div className="app-shell">
-      {/* Header */}
+      {/* Top Header */}
       <div className="app-header">
         <img src="/logo.jpg" alt="AEGIS" className="app-header-logo" />
         <div className="app-header-text">
-          <div className="app-header-title">NER-LEWS</div>
-          <div className="app-header-sub">MDoNER -¿ Govt. of India</div>
+          <div className="app-header-title">NER-LEWS 2.0</div>
+          <div className="app-header-sub">MDoNER ¬∑ Govt. of India</div>
         </div>
         <span className="app-header-badge">AEGIS</span>
         <div className="app-header-live">
@@ -744,30 +781,84 @@ export default function AppMobile() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main View Area */}
       <div className="app-content">
-        {activeTab === "home" && <DashboardTab t={t} lang={lang} />}
-        {activeTab === "map" && <MapTab t={t} />}
-        {activeTab === "alerts" && <AlertsTab t={t} />}
-        {activeTab === "sensors" && <SensorsTab t={t} />}
-        {activeTab === "report" && <ReportTab t={t} />}
+        {activeView === "home" && (
+          <HomeView t={t} onOpenSection={setActiveView} onOpenSOS={() => setShowSOSModal(true)} />
+        )}
+        {activeView === "predictions" && (
+          <PredictionsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
+        )}
+        {activeView === "map" && (
+          <MapView t={t} onBack={() => setActiveView("home")} />
+        )}
+        {activeView === "sensors" && (
+          <SensorsView t={t} onBack={() => setActiveView("home")} />
+        )}
+        {activeView === "analytics" && (
+          <AnalyticsView t={t} onBack={() => setActiveView("home")} />
+        )}
+        {activeView === "simulation" && (
+          <SimulatorView t={t} onBack={() => setActiveView("home")} />
+        )}
+        {activeView === "alerts" && (
+          <AlertsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
+        )}
+        {activeView === "safety" && (
+          <HomeView t={t} onOpenSection={setActiveView} onOpenSOS={() => setShowSOSModal(true)} />
+        )}
+        {activeView === "report" && (
+          <ReportView t={t} onBack={() => setActiveView("home")} />
+        )}
       </div>
 
-      {/* Bottom Nav */}
-      <div className="bottom-nav">
-        {NAV_ITEMS.map(item => (
-          <button
-            key={item.id}
-            className={`nav-item ${activeTab === item.id ? "active" : ""}`}
-            onClick={() => setActiveTab(item.id)}
-          >
-            {item.badge && <span className="nav-badge">{item.badge}</span>}
-            <span className="nav-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
+      {/* FLOATING TRANSLUCENT DOCK (SMARTPHONE DOCK) */}
+      <div className="floating-dock-container">
+        <div className="floating-dock">
+          {DOCK_APPS.map(app => (
+            <button
+              key={app.id}
+              className={`dock-btn ${activeView === app.id ? "active" : ""}`}
+              onClick={() => setActiveView(app.id)}
+            >
+              <span className="dock-icon">{app.icon}</span>
+              <span className="dock-label">{app.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Emergency Broadcast Sheet */}
+      {showSOSModal && (
+        <div className="modal-overlay" onClick={() => setShowSOSModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div className="modal-title">Emergency Dispatch Order</div>
+            <div className="modal-subtitle">Jaintia Hills NH-44 Sector 8 ¬∑ Multi-Channel Dispatch</div>
+            {[
+              { key: "sms", icon: "üì±", label: "Priority SMS Cell Broadcast (1,250 residents)" },
+              { key: "ndrf", icon: "ü™ñ", label: "Mobilize NDRF 1st Bn Guwahati & SDRF" },
+              { key: "highway", icon: "üöß", label: "Close NH-44 Highway Access Gates" },
+              { key: "medical", icon: "üè•", label: "Alert District Hospital Khliehriat" },
+              { key: "push", icon: "üîî", label: "Mobile Push Siren to Subscriber Towers" },
+            ].map(({ key, icon, label }) => (
+              <div className="checkbox-row" key={key}>
+                <span className="checkbox-icon">{icon}</span>
+                <span className="checkbox-label">{label}</span>
+                <div className={`toggle ${checks[key] ? "on" : "off"}`} onClick={() => setChecks(c => ({ ...c, [key]: !c[key] }))}>
+                  <div className="toggle-knob" />
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+              <button className="btn btn-danger" onClick={handleBroadcast}>TRANSMIT BROADCAST</button>
+              <button className="btn btn-outline" onClick={() => setShowSOSModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toastMsg && <div className="toast">{toastMsg}</div>}
     </div>
   )
 }
-
