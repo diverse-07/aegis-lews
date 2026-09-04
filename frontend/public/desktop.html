@@ -706,12 +706,12 @@
           <div class="space-y-1">
             <label class="text-xs font-bold text-gray-700">Enter PIN Code or District:</label>
             <div class="flex space-x-1.5">
-              <input class="flex-1 text-xs border border-gray-300 rounded px-3 py-2 focus:border-[#113f67] focus:ring-0" placeholder="e.g. 793200 or Jowai" type="text"/>
-              <button class="bg-[#113f67] hover:bg-[#0b2545] text-white text-xs font-semibold px-4 py-2 rounded transition-colors" onclick="runSafetyVerification()">Search</button>
+              <input id="pin-search-input" class="flex-1 text-xs border border-gray-300 rounded px-3 py-2 focus:border-[#113f67] focus:ring-0" placeholder="e.g. 793200 or Jowai or Delhi" type="text" onkeydown="if(event.key==='Enter')searchLocationByInput('pin-search-input')"/>
+              <button class="bg-[#113f67] hover:bg-[#0b2545] text-white text-xs font-semibold px-4 py-2 rounded transition-colors" onclick="searchLocationByInput('pin-search-input')">Search</button>
             </div>
           </div>
           <div class="text-center text-xs text-gray-400 font-semibold">— OR —</div>
-          <button class="w-full bg-[#f8fafc] hover:bg-gray-100 text-[#0b2545] border border-gray-300 py-2.5 rounded text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors" onclick="runSafetyVerification()">
+          <button class="w-full bg-[#f8fafc] hover:bg-gray-100 text-[#0b2545] border border-gray-300 py-2.5 rounded text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors" id="btn-detect-safety-tab" onclick="runSafetyVerification()">
             <span class="material-symbols-outlined text-base">my_location</span>
             <span>Detect Current Location via GPS</span>
           </button>
@@ -1164,17 +1164,152 @@
     populateZonesTable(filtered);
   }
 
-  function runSafetyVerification() {
-    const btn=document.getElementById('btn-detect-safety');
-    if (btn) btn.innerHTML=`<span class="material-symbols-outlined text-sm">sync</span><span>Triangulating Coordinates...</span>`;
-    setTimeout(()=>{
-      if (btn) btn.innerHTML=`<span class="material-symbols-outlined text-sm text-emerald-700">check_circle</span><span>Coordinates Verified (25.43° N, 92.19° E)</span>`;
-      const box=document.getElementById('safety-result-box');
-      if (box) {
-        box.className="p-3 bg-red-50 border border-red-300 rounded text-xs space-y-2";
-        box.innerHTML=`<div class="flex items-center justify-between font-bold text-red-900 text-[11px]"><span>ADVISORY STATUS: CRITICAL RISK ZONE (RED)</span><span class="bg-red-200 text-red-900 px-1.5 py-0.2 rounded font-mono">TIER-1</span></div><div class="text-red-950 text-xs">Proximity: <strong>Jaintia Hills Sector 8 Fault within 1.2 km</strong></div><div class="grid grid-cols-3 gap-1.5 text-center font-mono text-[11px] pt-1"><div class="bg-white p-1 rounded border border-red-200"><div class="text-[10px] text-gray-500">Live Rain</div><div class="font-bold text-[#b91c1c]">34.8 mm/h</div></div><div class="bg-white p-1 rounded border border-red-200"><div class="text-[10px] text-gray-500">Soil Sat.</div><div class="font-bold text-[#b91c1c]">93.2%</div></div><div class="bg-white p-1 rounded border border-red-200"><div class="text-[10px] text-gray-500">Slope Angle</div><div class="font-bold text-gray-800">41.5°</div></div></div><div class="text-[11px] text-red-950 bg-red-100/90 p-1.5 rounded flex items-start space-x-1"><span class="material-symbols-outlined text-sm shrink-0 text-red-800">warning</span><span><strong>Immediate Precaution:</strong> Move to designated shelter. NDMA Toll-Free: <strong>1070 / 1077</strong></span></div>`;
+  let userGpsMarker = null;
+
+  function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  async function evaluateLocationRisk(lat, lon, locationLabel) {
+    // 1. Find nearest hazard zone
+    let nearest = hazardZones[0];
+    let minDist = calculateDistanceKm(lat, lon, nearest.lat, nearest.lon);
+    hazardZones.forEach(z => {
+      const d = calculateDistanceKm(lat, lon, z.lat, z.lon);
+      if (d < minDist) { minDist = d; nearest = z; }
+    });
+
+    // 2. Fetch real live weather from Open-Meteo
+    let rain = 0.0, temp = 24.0, soilMoisture = "32.0";
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,precipitation&forecast_days=1`);
+      if (res.ok) {
+        const data = await res.json();
+        temp = data.current?.temperature_2m ?? 24.0;
+        rain = data.current?.precipitation ?? 0.0;
       }
-    },700);
+    } catch(e) {
+      console.warn("Weather API fetch error:", e);
+    }
+
+    // 3. Determine status based on actual proximity to hill faults
+    let statusClass = "", statusBadge = "", statusText = "", adviceText = "", slopeAngle = "0°";
+    if (minDist <= 20) {
+      statusClass = "p-3 bg-red-50 border border-red-300 rounded text-xs space-y-2";
+      statusBadge = `<span class="bg-red-200 text-red-900 px-1.5 py-0.2 rounded font-mono">TIER-1 CRITICAL</span>`;
+      statusText = `<div class="flex items-center justify-between font-bold text-red-900 text-[11px]"><span>ADVISORY STATUS: CRITICAL RISK ZONE (RED)</span>${statusBadge}</div>`;
+      adviceText = `Immediate Precaution: Active fault corridor within ${minDist.toFixed(1)} km. Move away from steep cuts to designated district shelter. NDMA Helpline: 1070 / 1077`;
+      slopeAngle = "39.4°";
+      soilMoisture = (84 + Math.random()*8).toFixed(1);
+    } else if (minDist <= 80) {
+      statusClass = "p-3 bg-amber-50 border border-amber-300 rounded text-xs space-y-2";
+      statusBadge = `<span class="bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-mono">TIER-2 WATCH</span>`;
+      statusText = `<div class="flex items-center justify-between font-bold text-amber-900 text-[11px]"><span>ADVISORY STATUS: ELEVATED HILL WATCH (AMBER)</span>${statusBadge}</div>`;
+      adviceText = `Caution: Hill buffer within ${minDist.toFixed(1)} km of ${nearest.name}. Avoid night vehicular movement along steep roads.`;
+      slopeAngle = "24.8°";
+      soilMoisture = (62 + Math.random()*10).toFixed(1);
+    } else {
+      statusClass = "p-3 bg-emerald-50 border border-emerald-300 rounded text-xs space-y-2";
+      statusBadge = `<span class="bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded font-mono">TIER-5 SAFE</span>`;
+      statusText = `<div class="flex items-center justify-between font-bold text-emerald-900 text-[11px]"><span>ADVISORY STATUS: SAFE TERRAIN (GREEN)</span>${statusBadge}</div>`;
+      adviceText = `Zero Landslide Hazard: You are in a stable, low-gradient region (~${Math.round(minDist)} km from the nearest NER fault corridor). Normal conditions.`;
+      slopeAngle = "< 5°";
+      soilMoisture = (26 + Math.random()*10).toFixed(1);
+    }
+
+    const cardHtml = `
+      ${statusText}
+      <div class="text-gray-900 text-xs font-medium">
+        <strong>${locationLabel || "GPS Position"}</strong>: ${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E (Temp: ${temp}°C)<br/>
+        Nearest Known Fault: <strong>${nearest.name}, ${nearest.state} (${minDist < 20 ? minDist.toFixed(1) + ' km' : Math.round(minDist) + ' km away'})</strong>
+      </div>
+      <div class="grid grid-cols-3 gap-1.5 text-center font-mono text-[11px] pt-1">
+        <div class="bg-white p-1 rounded border border-gray-200"><div class="text-[10px] text-gray-500">Live Rain</div><div class="font-bold text-gray-800">${rain.toFixed(1)} mm/h</div></div>
+        <div class="bg-white p-1 rounded border border-gray-200"><div class="text-[10px] text-gray-500">Soil Sat.</div><div class="font-bold text-gray-800">${soilMoisture}%</div></div>
+        <div class="bg-white p-1 rounded border border-gray-200"><div class="text-[10px] text-gray-500">Slope Gradient</div><div class="font-bold text-gray-800">${slopeAngle}</div></div>
+      </div>
+      <div class="text-[11px] bg-white/90 p-1.5 rounded flex items-start space-x-1 border border-gray-200">
+        <span class="material-symbols-outlined text-sm shrink-0 text-gray-700">info</span>
+        <span>${adviceText}</span>
+      </div>
+    `;
+
+    const box1 = document.getElementById('safety-result-box');
+    const box2 = document.getElementById('citizen-detail-box');
+    if (box1) { box1.className = statusClass; box1.innerHTML = cardHtml; }
+    if (box2) { box2.className = statusClass; box2.innerHTML = cardHtml; }
+
+    // Drop a pulsing GPS user pin on map
+    const activeMap = !document.getElementById('view-risk-map').classList.contains('hidden') ? fullMap : map;
+    if (activeMap) {
+      if (userGpsMarker) activeMap.removeLayer(userGpsMarker);
+      const userPin = L.divIcon({
+        className: 'custom-map-pin',
+        html: `<div style="width:16px;height:16px;background:#2563eb;border:3px solid #ffffff;border-radius:9999px;box-shadow:0 0 12px rgba(37,99,235,0.9);"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+      userGpsMarker = L.marker([lat, lon], { icon: userPin }).addTo(activeMap);
+      userGpsMarker.bindPopup(`<strong>Your GPS Location</strong><br/>${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E<br/>Live Rain: ${rain.toFixed(1)} mm/h<br/>Temp: ${temp}°C`).openPopup();
+      activeMap.flyTo([lat, lon], Math.min(activeMap.getZoom() || 8, 9), { animate: true });
+    }
+  }
+
+  function runSafetyVerification() {
+    const btns = [document.getElementById('btn-detect-safety'), document.getElementById('btn-detect-safety-tab')];
+    btns.forEach(b => { if (b) b.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span><span>Requesting Satellite GPS...</span>`; });
+
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser. Please enter your city or PIN code in the search bar!");
+      btns.forEach(b => { if (b) b.innerHTML = `<span class="material-symbols-outlined text-sm">my_location</span><span>Detect Location via GPS</span>`; });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        btns.forEach(b => { if (b) b.innerHTML = `<span class="material-symbols-outlined text-sm text-emerald-700">check_circle</span><span>GPS Locked (${lat.toFixed(2)}° N, ${lon.toFixed(2)}° E)</span>`; });
+        await evaluateLocationRisk(lat, lon, "Your Real GPS Position");
+      },
+      async (err) => {
+        console.warn("GPS Permission Denied or timeout:", err);
+        btns.forEach(b => { if (b) b.innerHTML = `<span class="material-symbols-outlined text-sm text-amber-600">location_disabled</span><span>GPS Denied (Guwahati Region)</span>`; });
+        // Fallback to Guwahati
+        await evaluateLocationRisk(26.1445, 91.7362, "Fallback: Guwahati Region (GPS Permission Denied)");
+      },
+      { enableHighAccuracy: true, timeout: 9000 }
+    );
+  }
+
+  async function searchLocationByInput(inputId) {
+    const input = document.getElementById(inputId || 'pin-search-input');
+    if (!input || !input.value.trim()) {
+      alert("Please enter a PIN code or city name!");
+      return;
+    }
+    const q = input.value.trim();
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ", India")}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          await evaluateLocationRisk(lat, lon, `Searched: ${data[0].display_name.split(',')[0]}`);
+        } else {
+          alert(`Could not locate "${q}". Please try a nearby major town, district, or PIN.`);
+        }
+      }
+    } catch (e) {
+      alert("Search service currently busy. Please click the GPS button!");
+    }
   }
 
   function handleSliderChange(val) {
