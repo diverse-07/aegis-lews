@@ -1326,45 +1326,50 @@ function OfflineDisasterPortal({ t, activeTab, onSelectTab, onSwitchOnline }) {
 
   return (
     <div className="offline-portal-container">
-      {/* Offline Disaster Banner */}
-      <div className="offline-emergency-banner">
-        <div className="offline-banner-top">
-          <div className="offline-badge">
+      {/* Indestructible Offline Hero Card */}
+      <div className="offline-hero-card">
+        <div className="offline-hero-top">
+          <div className="offline-hero-tag">
             <span className="net-pulse-dot offline" />
-            <span>OFFLINE DISASTER MODE</span>
+            <span>INDESTRUCTIBLE OFFLINE ENGINE</span>
           </div>
-          <button className="btn-switch-online" onClick={onSwitchOnline} title="Switch to Online Mode">
-            <span>📶 Switch to Online 4G</span>
-          </button>
+          <span className="zero-kb-badge">0 KB DATA NEEDED</span>
         </div>
-        <div className="offline-banner-title">Zero Internet / Cellular Tower Blackout</div>
-        <div className="offline-banner-desc">
-          Operating in Autonomous P2P Bluetooth Mesh &amp; Pre-Downloaded Geotechnical Cache.
+        <div className="offline-hero-title">Zero Internet? No Problem.</div>
+        <div className="offline-hero-desc">
+          AEGIS operates 100% autonomously in remote mountain blackouts using Hardware Satellite GPS, Local Flash Cache, and Bluetooth P2P Mesh.
         </div>
       </div>
 
-      {/* Offline Sub-Navigation Tabs */}
-      <div className="offline-subnav">
-        <button className={`offline-tab-btn ${activeTab === "predictions" ? "active" : ""}`} onClick={() => onSelectTab("predictions")}>
-          <Icons.Ai size={16} />
-          <span>Cached AI</span>
-        </button>
-        <button className={`offline-tab-btn ${activeTab === "mesh" ? "active" : ""}`} onClick={() => onSelectTab("mesh")}>
-          <Icons.Bluetooth size={16} />
-          <span>P2P Mesh ({peers.length})</span>
-        </button>
-        <button className={`offline-tab-btn ${activeTab === "shelters" ? "active" : ""}`} onClick={() => onSelectTab("shelters")}>
-          <Icons.Map size={16} />
-          <span>Shelters</span>
-        </button>
-        <button className={`offline-tab-btn ${activeTab === "contacts" ? "active" : ""}`} onClick={() => onSelectTab("contacts")}>
-          <Icons.Phone size={16} />
-          <span>SOS Calls</span>
-        </button>
-        <button className={`offline-tab-btn ${activeTab === "safety" ? "active" : ""}`} onClick={() => onSelectTab("safety")}>
-          <Icons.Safety size={16} />
-          <span>GPS Sensor</span>
-        </button>
+      {/* Horizontal Scrollable Offline Modules (Only Options that Don't Need Internet) */}
+      <div className="offline-scroll-wrap">
+        <div className="offline-scroll-label">OFFLINE SURVIVAL MODULES (ZERO INTERNET REQUIRED)</div>
+        <div className="offline-chips-scroll">
+          <button className={`offline-chip-btn ${activeTab === "predictions" ? "active" : ""}`} onClick={() => onSelectTab("predictions")}>
+            <Icons.Ai size={16} />
+            <span>🧠 Cached AI Hazards</span>
+          </button>
+          <button className={`offline-chip-btn ${activeTab === "mesh" ? "active" : ""}`} onClick={() => onSelectTab("mesh")}>
+            <Icons.Bluetooth size={16} />
+            <span>📡 Bluetooth P2P Mesh ({peers.length})</span>
+          </button>
+          <button className={`offline-chip-btn ${activeTab === "shelters" ? "active" : ""}`} onClick={() => onSelectTab("shelters")}>
+            <Icons.Map size={16} />
+            <span>🗺️ Bedrock Shelters</span>
+          </button>
+          <button className={`offline-chip-btn ${activeTab === "contacts" ? "active" : ""}`} onClick={() => onSelectTab("contacts")}>
+            <Icons.Phone size={16} />
+            <span>📞 Direct SOS Calls</span>
+          </button>
+          <button className={`offline-chip-btn ${activeTab === "safety" ? "active" : ""}`} onClick={() => onSelectTab("safety")}>
+            <Icons.Safety size={16} />
+            <span>🛡️ Satellite GPS Radar</span>
+          </button>
+          <button className={`offline-chip-btn ${activeTab === "sops" ? "active" : ""}`} onClick={() => onSelectTab("sops")}>
+            <Icons.Report size={16} />
+            <span>📋 Survival SOP Checklist</span>
+          </button>
+        </div>
       </div>
 
       {/* TAB 1: PRE-DOWNLOADED PREDICTIONS */}
@@ -1772,21 +1777,6 @@ export default function AppMobile() {
 
           {/* Top Right: Network Pill + 3-Dot More Menu */}
           <div className="mobile-header-actions">
-            {/* Quick Online / Offline Mode Switcher */}
-            <button 
-              onClick={() => {
-                const next = !isOffline
-                setIsOffline(next)
-                setToastMsg(next ? "Switched to Offline Disaster Mesh Mode" : "Switched to Central Cloud 4G Mode")
-                setTimeout(() => setToastMsg(""), 3500)
-              }}
-              className={`mobile-net-pill ${isOffline ? "offline" : "online"}`}
-              title="Toggle Online 4G / Offline Bluetooth Mesh"
-            >
-              <span className={`net-pulse-dot ${isOffline ? "offline" : "online"}`} />
-              <span>{isOffline ? "OFFLINE" : "ONLINE"}</span>
-            </button>
-
             {/* 3-Dot Options Button */}
             <button 
               className="mobile-more-btn" 
@@ -1794,6 +1784,41 @@ export default function AppMobile() {
               title="More Options"
             >
               <Icons.MoreVertical size={20} color="var(--darknavy)" />
+            </button>
+          </div>
+        </div>
+
+        {/* Physical Sliding Mode Switcher (Online Cloud vs Offline Survival) */}
+        <div className="mode-segmented-bar">
+          <div className="mode-toggle-track">
+            <button 
+              className={`mode-toggle-btn ${!isOffline ? "active online" : ""}`}
+              onClick={() => {
+                if (isOffline) {
+                  setIsOffline(false)
+                  setToastMsg("Switched to Online 4G Cloud Mode")
+                  setTimeout(() => setToastMsg(""), 3000)
+                }
+              }}
+            >
+              <span className="mode-btn-dot online" />
+              <span>ONLINE CLOUD</span>
+              <span className="mode-badge-hint">Live 4G</span>
+            </button>
+
+            <button 
+              className={`mode-toggle-btn ${isOffline ? "active offline" : ""}`}
+              onClick={() => {
+                if (!isOffline) {
+                  setIsOffline(true)
+                  setToastMsg("Switched to Offline Survival Engine (Zero Internet Needed)")
+                  setTimeout(() => setToastMsg(""), 3000)
+                }
+              }}
+            >
+              <span className="mode-btn-dot offline" />
+              <span>OFFLINE SURVIVAL</span>
+              <span className="mode-badge-hint">0 KB Data</span>
             </button>
           </div>
         </div>

@@ -2067,3 +2067,208 @@ input[type=range]::-webkit-slider-thumb {
   width: 100%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
+
+
+
+/* ======================================================
+   SLIDING MODE CONTROL & HORIZONTAL SCROLL CHIPS
+   ====================================================== */
+.mode-segmented-bar {
+  padding: 6px 14px 10px;
+  background: #ffffff;
+}
+
+.mode-toggle-track {
+  display: flex;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.mode-toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mode-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+.mode-toggle-btn.active.online {
+  background: #ffffff;
+  color: var(--navy);
+  box-shadow: 0 3px 10px rgba(30, 64, 175, 0.15), 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.mode-toggle-btn.active.offline {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.2), 0 1px 3px rgba(0,0,0,0.06);
+  animation: offlinePulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes offlinePulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
+}
+
+.mode-btn-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.mode-btn-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.mode-btn-dot.offline {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+  animation: blink 1s infinite;
+}
+
+.mode-badge-hint {
+  font-size: 8.5px;
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+.mode-toggle-btn.active.online .mode-badge-hint {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.mode-toggle-btn.active.offline .mode-badge-hint {
+  background: #fde68a;
+  color: #78350f;
+}
+
+/* OFFLINE HERO CARD */
+.offline-hero-card {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1px solid #fde68a;
+  border-left: 5px solid #f59e0b;
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.08);
+}
+
+.offline-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.offline-hero-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 900;
+  color: #92400e;
+  letter-spacing: 0.6px;
+}
+
+.zero-kb-badge {
+  background: #92400e;
+  color: #ffffff;
+  font-size: 8.5px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.offline-hero-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #78350f;
+  line-height: 1.2;
+}
+
+.offline-hero-desc {
+  font-size: 11px;
+  color: #92400e;
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+/* HORIZONTAL SCROLLING CHIPS FOR OFFLINE */
+.offline-scroll-wrap {
+  margin-bottom: 16px;
+}
+
+.offline-scroll-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
+.offline-chips-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.offline-chips-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.offline-chip-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.offline-chip-btn:active {
+  transform: scale(0.92);
+}
+
+.offline-chip-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(30, 64, 175, 0.25);
+  transform: translateY(-1px);
+}
