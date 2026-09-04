@@ -2272,3 +2272,15 @@ input[type=range]::-webkit-slider-thumb {
   box-shadow: 0 4px 14px rgba(30, 64, 175, 0.25);
   transform: translateY(-1px);
 }
+
+/* Strip any injected third-party Netlify badge, drawer, or watermarks */
+[class*="netlify"], [id*="netlify"], netlify-drawer, .netlify-badge, #netlify-badge, iframe[src*="netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+}

@@ -132,3 +132,15 @@ body { font-family: "Segoe UI", Arial, sans-serif; background: #eef1f5; color: #
   .pred-factors { grid-template-columns: repeat(2,1fr); }
   .sensor-boxes { grid-template-columns: repeat(2,1fr); }
 }
+
+/* Strip any injected third-party Netlify badge, drawer, or watermarks */
+[class*="netlify"], [id*="netlify"], netlify-drawer, .netlify-badge, #netlify-badge, iframe[src*="netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+}
