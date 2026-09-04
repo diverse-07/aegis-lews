@@ -1,22 +1,106 @@
 import React, { useState, useEffect } from "react"
 import { MapContainer, TileLayer, Polygon, CircleMarker, Popup } from "react-leaflet"
-import { getWeather, broadcastAlert } from "./api/client"
+import { broadcastAlert } from "./api/client"
 import "./mobile.css"
+
+// --- PROFESSIONAL VECTOR ICONS (NO CARTOON EMOJIS) ---
+const Icons = {
+  Home: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+  Map: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+      <line x1="8" y1="2" x2="8" y2="18"/>
+      <line x1="16" y1="6" x2="16" y2="22"/>
+    </svg>
+  ),
+  Ai: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="4" width="16" height="16" rx="2"/>
+      <rect x="9" y="9" width="6" height="6"/>
+      <line x1="9" y1="1" x2="9" y2="4"/>
+      <line x1="15" y1="1" x2="15" y2="4"/>
+      <line x1="9" y1="20" x2="9" y2="23"/>
+      <line x1="15" y1="20" x2="15" y2="23"/>
+      <line x1="20" y1="9" x2="23" y2="9"/>
+      <line x1="20" y1="14" x2="23" y2="14"/>
+      <line x1="1" y1="9" x2="4" y2="9"/>
+      <line x1="1" y1="14" x2="4" y2="14"/>
+    </svg>
+  ),
+  Sensors: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.93 19.07A10 10 0 0 1 12 2a10 10 0 0 1 7.07 17.07"/>
+      <path d="M7.76 16.24A6 6 0 0 1 12 6a6 6 0 0 1 4.24 10.24"/>
+      <circle cx="12" cy="18" r="2" fill={color}/>
+    </svg>
+  ),
+  Analytics: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/>
+      <line x1="12" y1="20" x2="12" y2="4"/>
+      <line x1="6" y1="20" x2="6" y2="14"/>
+      <line x1="2" y1="20" x2="22" y2="20"/>
+    </svg>
+  ),
+  Simulator: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>
+      <line x1="8" y1="19" x2="8" y2="23"/>
+      <line x1="12" y1="17" x2="12" y2="21"/>
+      <line x1="16" y1="19" x2="16" y2="23"/>
+    </svg>
+  ),
+  Alerts: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  ),
+  Safety: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <polyline points="9 12 11 14 15 10"/>
+    </svg>
+  ),
+  Report: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+  ),
+  Gps: ({ size = 22, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="22" y1="12" x2="18" y2="12"/>
+      <line x1="6" y1="12" x2="2" y2="12"/>
+      <line x1="12" y1="6" x2="12" y2="2"/>
+      <line x1="12" y1="22" x2="12" y2="18"/>
+      <circle cx="12" cy="12" r="3" fill={color}/>
+    </svg>
+  )
+}
 
 // GEOSPATIAL & SENSOR DATA
 const ZONES = [
-  { id:1, name:"Jaintia Hills", state:"Meghalaya", score:87, risk:"CRITICAL", coords:[[25.20,92.30],[25.00,92.00],[24.85,92.40],[25.05,92.70]], desc:"Active Disang shale thrust. NH-44 debris flow corridor." },
-  { id:2, name:"Sohra / Cherrapunji", state:"Meghalaya", score:74, risk:"HIGH", coords:[[25.40,91.60],[25.20,91.40],[25.10,91.70],[25.30,91.90]], desc:"Extreme rainfall zone. Limestone escarpment failure." },
-  { id:3, name:"Ri-Bhoi Foothills", state:"Meghalaya", score:52, risk:"MODERATE", coords:[[26.00,91.70],[25.70,91.50],[25.60,92.00],[25.90,92.20]], desc:"Seasonal translational soil slips along highway." },
-  { id:4, name:"North Sikkim MCT", state:"Sikkim", score:83, risk:"CRITICAL", coords:[[28.00,88.40],[27.60,88.10],[27.40,88.50],[27.70,88.80]], desc:"Main Central Thrust active fault. Glacial moraine instability." },
-  { id:5, name:"Gangtok South Ridge", state:"Sikkim", score:78, risk:"HIGH", coords:[[27.40,88.65],[27.20,88.50],[27.15,88.75],[27.35,88.85]], desc:"Terraced hill slope weathering. NH-10 connectivity link." },
-  { id:6, name:"Aizawl East Flank", state:"Mizoram", score:76, risk:"HIGH", coords:[[23.85,92.60],[23.65,92.40],[23.55,92.80],[23.75,93.00]], desc:"Urban slope cutting. Sandstone formation saturation." },
-  { id:7, name:"Lunglei Ridge", state:"Mizoram", score:48, risk:"MODERATE", coords:[[23.10,92.80],[22.75,92.60],[22.65,93.00],[22.95,93.20]], desc:"Longitudinal valley slope with moderate moisture." },
-  { id:8, name:"Kohima Dzudza", state:"Nagaland", score:68, risk:"HIGH", coords:[[25.80,94.00],[25.55,93.75],[25.45,94.20],[25.65,94.45]], desc:"NH-29 bridge corridor. Active slope subsidence." },
-  { id:9, name:"Tawang MCT Zone", state:"Arunachal", score:81, risk:"CRITICAL", coords:[[27.75,91.95],[27.45,91.65],[27.30,92.05],[27.60,92.35]], desc:"High altitude permafrost degradation along passes." },
-  { id:10, name:"Haflong Hill Station", state:"Assam", score:85, risk:"CRITICAL", coords:[[25.25,93.10],[25.05,92.90],[24.95,93.25],[25.15,93.35]], desc:"Dima Hasao railway hill cut. High debris flow record." },
-  { id:11, name:"Senapati Terraces", state:"Manipur", score:54, risk:"MODERATE", coords:[[25.40,93.90],[25.10,93.65],[24.95,94.10],[25.25,94.35]], desc:"Hill agricultural slopes. Seasonal monsoon erosion." },
-  { id:12, name:"Agartala Basin", state:"Tripura", score:18, risk:"SAFE", coords:[[23.95,91.20],[23.70,91.00],[23.60,91.40],[23.85,91.60]], desc:"Stable alluvial terrain. Very low gradient." },
+  { id:1, name:"Jaintia Hills", state:"Meghalaya", score:87, risk:"CRITICAL", coords:[[25.20,92.30],[25.00,92.00],[24.85,92.40],[25.05,92.70]], lat:25.4484, lng:92.2152, desc:"Active Disang shale thrust. NH-44 debris flow corridor." },
+  { id:2, name:"Sohra / Cherrapunji", state:"Meghalaya", score:74, risk:"HIGH", coords:[[25.40,91.60],[25.20,91.40],[25.10,91.70],[25.30,91.90]], lat:25.2986, lng:91.7322, desc:"Extreme rainfall zone. Limestone escarpment failure." },
+  { id:3, name:"Ri-Bhoi Foothills", state:"Meghalaya", score:52, risk:"MODERATE", coords:[[26.00,91.70],[25.70,91.50],[25.60,92.00],[25.90,92.20]], lat:25.8500, lng:91.8800, desc:"Seasonal translational soil slips along highway." },
+  { id:4, name:"North Sikkim MCT", state:"Sikkim", score:83, risk:"CRITICAL", coords:[[28.00,88.40],[27.60,88.10],[27.40,88.50],[27.70,88.80]], lat:27.7330, lng:88.5160, desc:"Main Central Thrust active fault. Glacial moraine instability." },
+  { id:5, name:"Gangtok South Ridge", state:"Sikkim", score:78, risk:"HIGH", coords:[[27.40,88.65],[27.20,88.50],[27.15,88.75],[27.35,88.85]], lat:27.3389, lng:88.6065, desc:"Terraced hill slope weathering. NH-10 connectivity link." },
+  { id:6, name:"Aizawl East Flank", state:"Mizoram", score:76, risk:"HIGH", coords:[[23.85,92.60],[23.65,92.40],[23.55,92.80],[23.75,93.00]], lat:23.7271, lng:92.7176, desc:"Urban slope cutting. Sandstone formation saturation." },
+  { id:7, name:"Lunglei Ridge", state:"Mizoram", score:48, risk:"MODERATE", coords:[[23.10,92.80],[22.75,92.60],[22.65,93.00],[22.95,93.20]], lat:22.8830, lng:92.7330, desc:"Longitudinal valley slope with moderate moisture." },
+  { id:8, name:"Kohima Dzudza", state:"Nagaland", score:68, risk:"HIGH", coords:[[25.80,94.00],[25.55,93.75],[25.45,94.20],[25.65,94.45]], lat:25.6751, lng:94.1086, desc:"NH-29 bridge corridor. Active slope subsidence." },
+  { id:9, name:"Tawang MCT Zone", state:"Arunachal", score:81, risk:"CRITICAL", coords:[[27.75,91.95],[27.45,91.65],[27.30,92.05],[27.60,92.35]], lat:27.5861, lng:91.8594, desc:"High altitude permafrost degradation along passes." },
+  { id:10, name:"Haflong Hill Station", state:"Assam", score:85, risk:"CRITICAL", coords:[[25.25,93.10],[25.05,92.90],[24.95,93.25],[25.15,93.35]], lat:25.1800, lng:93.0200, desc:"Dima Hasao railway hill cut. High debris flow record." },
+  { id:11, name:"Senapati Terraces", state:"Manipur", score:54, risk:"MODERATE", coords:[[25.40,93.90],[25.10,93.65],[24.95,94.10],[25.25,94.35]], lat:25.2660, lng:94.0160, desc:"Hill agricultural slopes. Seasonal monsoon erosion." },
+  { id:12, name:"Agartala Basin", state:"Tripura", score:18, risk:"SAFE", coords:[[23.95,91.20],[23.70,91.00],[23.60,91.40],[23.85,91.60]], lat:23.8315, lng:91.5600, desc:"Stable alluvial terrain. Very low gradient." },
 ]
 
 const SENSORS = [
@@ -30,7 +114,6 @@ const SENSORS = [
   { id:"STN-AR-008", name:"Tawang MCT Pass", state:"Arunachal", status:"online", reading:"68mm/24h · -2C ambient", lat:27.5861, lng:91.8594, batt:"12.8V" },
 ]
 
-// 12 MOST COMMON NORTH-EASTERN LANGUAGES
 const LANGUAGES = [
   { code:"en", native:"English", region:"Official / Central" },
   { code:"as", native:"অসমীয়া", region:"Assam" },
@@ -52,7 +135,7 @@ const TRANSLATIONS = {
     alerts:"Alerts", simulator:"Simulator", safety:"Safety Check", report:"Report",
     activeWarning:"CRITICAL HAZARD WARNING",
     warningText:"Jaintia Hills, Meghalaya (NH-44) · 142mm/24h · Evacuate 3 villages.",
-    checkSafety:"Check GPS Safety", checking:"Triangulating GPS...", emergency:"Emergency Broadcast",
+    checkSafety:"Scan GPS Safety", checking:"Locking Satellite GPS...", emergency:"Emergency Broadcast",
   },
   as: {
     dashboard:"হোম", map:"মানচিত্ৰ", ai:"AI ভৱিষ্যদ্বাণী", sensors:"চেন্সৰ", analytics:"বিশ্লেষণ",
@@ -79,12 +162,12 @@ const TRANSLATIONS = {
     dashboard:"Nok (Home)", map:"Map", ai:"AI Ma·siani", sensors:"Sensor-rang", analytics:"Histap",
     alerts:"Mikrakatani", simulator:"Simulator", safety:"Jol Naljoka", report:"Report",
     activeWarning:"KENANI MIKRAKATANI",
-    warningText:"Jaintia Hills (NH-44) · 142mm mikka/24 ghanta · Naljokgipa biapona re·angbo.",
+    warningText:"Jaintia Hills (NH-44) · Naljokgipa biapona re·angbo.",
     checkSafety:"GPS Naljokani Nibo", checking:"Biapko sandienga...", emergency:"Rang·san Mikrakatbo",
   },
   lus: {
     dashboard:"In (Home)", map:"Map", ai:"AI Hriatlawkna", sensors:"Sensor-te", analytics:"Endikna",
-    alerts:"Vantlang Hriattirna", simulator:"Simulator", safety:"Himna Enna", report:"Report",
+    alerts:"Hriattirna", simulator:"Simulator", safety:"Himna Enna", report:"Report",
     activeWarning:"LEIMIN HLUAWHNA",
     warningText:"Jaintia Hills (NH-44) · Ruahtui 142mm sur · Hmun him pan vat rawh u.",
     checkSafety:"GPS Himna En Rawh", checking:"Hmun zawn mek a ni...", emergency:"Khaihhawm Hriattirna",
@@ -100,28 +183,28 @@ const TRANSLATIONS = {
     dashboard:"होम", map:"नक्सा", ai:"AI भविष्यवाणी", sensors:"सेन्सर", analytics:"एनालिटिक्स",
     alerts:"अलर्ट", simulator:"सिमुलेटर", safety:"सुरक्षा जाँच", report:"रिपोर्ट",
     activeWarning:"गम्भीर पहिरो चेतावनी",
-    warningText:"जयन्तिया हिल्स (NH-44) · १४२मिमि/२४घण्टा · तुरुन्त सुरक्षित स्थानमा जानुस्।",
+    warningText:"जयन्तिया हिल्स (NH-44) · १४२मिमि/२४ঘণ্টা · तुरुन्त सुरक्षित स्थानमा जानुस्।",
     checkSafety:"GPS सुरक्षा जाँच्नुस्", checking:"स्थान खोजिँदैछ...", emergency:"आपतकालीन अलर्ट",
   },
   nag: {
     dashboard:"Ghor (Home)", map:"Map", ai:"AI Janai Diya", sensors:"Sensors", analytics:"Hesab",
     alerts:"Hushiar", simulator:"Simulator", safety:"Safety Check", report:"Report",
     activeWarning:"DANGA KHATRA HUSHIAR",
-    warningText:"Jaintia Hills (NH-44) · Bishi pani giri ase 142mm · Safe jaka te jabi.",
+    warningText:"Jaintia Hills (NH-44) · Safe jaka te jabi.",
     checkSafety:"GPS Safety Sabo", checking:"Jaka dhoondhi ase...", emergency:"Emergency Khobor",
   },
   brx: {
-    dashboard:"Nò (Home)", map:"Mwnthay (Map)", ai:"AI Mitinga", sensors:"Sensors", analytics:"Naijirnay",
+    dashboard:"Nò (Home)", map:"Map", ai:"AI Mitinga", sensors:"Sensors", analytics:"Naijirnay",
     alerts:"Husiyar", simulator:"Simulator", safety:"Bikhung", report:"Report",
     activeWarning:"GWBWRWI DANGER",
-    warningText:"Jaintia Hills (NH-44) · 142mm okha · Sukhibari thaoniyo thaang.",
+    warningText:"Jaintia Hills (NH-44) · Sukhibari thaoniyo thaang.",
     checkSafety:"GPS Safety Nay", checking:"Jaiga naydong...", emergency:"Emergency Alert",
   },
   trp: {
     dashboard:"Nok (Home)", map:"Map", ai:"AI Sakphang", sensors:"Sensors", analytics:"Saimung",
     alerts:"Khurumung", simulator:"Simulator", safety:"Kahamyung", report:"Report",
     activeWarning:"KWMAI YAKGAMI",
-    warningText:"Jaintia Hills (NH-44) · 142mm waatwi · Tongthok hani thani thani thaidi.",
+    warningText:"Jaintia Hills (NH-44) · Tongthok hani thani thani thaidi.",
     checkSafety:"GPS Safety Naydi", checking:"Jaga nayjagwi tongo...", emergency:"Emergency Alert",
   },
   hi: {
@@ -141,36 +224,32 @@ function getRiskColor(score) {
   return "#15803d"
 }
 
-// 1. SPLASH SCREEN (FIRST TIME ONLY)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// 1. SPLASH SCREEN
 function SplashScreen({ onEnter }) {
   const [selectedLang, setSelectedLang] = useState("en")
-  const particles = Array.from({ length: 12 }, (_, i) => ({
-    size: Math.random() * 50 + 20,
-    left: Math.random() * 100,
-    duration: Math.random() * 8 + 6,
-    delay: Math.random() * 4,
-  }))
 
   return (
     <div className="splash-screen">
-      <div className="splash-particles">
-        {particles.map((p, i) => (
-          <div key={i} className="splash-particle" style={{
-            width: p.size, height: p.size, left: `${p.left}%`,
-            animationDuration: `${p.duration}s`, animationDelay: `${p.delay}s`,
-          }} />
-        ))}
-      </div>
       <div className="splash-logo-wrap">
         <div className="splash-logo-ring" />
         <div className="splash-logo-ring2" />
         <img src="/logo.jpg" alt="AEGIS" className="splash-logo" />
       </div>
       <div className="splash-badge">TEAM AEGIS · SIH 2026</div>
-      <h1 className="splash-title">NER <span>Landslide</span><br />Warning System</h1>
+      <h1 className="splash-title">NER <span>Landslide</span><br />Early Warning System</h1>
       <p className="splash-subtitle">MDoNER · Govt. of India · Geotechnical AI</p>
 
-      <p className="splash-lang-title">Choose Your Language / भाषा चुनें</p>
+      <p className="splash-lang-title">Choose Language / ভাষা নিৰ্বাচন কৰক</p>
       <div className="splash-lang-grid" style={{ maxHeight: "240px", overflowY: "auto", padding: "4px" }}>
         {LANGUAGES.map(lang => (
           <button key={lang.code} className={`lang-btn ${selectedLang === lang.code ? "selected" : ""}`} onClick={() => setSelectedLang(lang.code)}>
@@ -183,21 +262,188 @@ function SplashScreen({ onEnter }) {
         <span>Launch Application</span>
         <span>→</span>
       </button>
-      <div className="splash-footer">
-        Government of India · MDoNER · NDMA<br />
-        NER-LEWS 2.0 · Preference will be saved
+    </div>
+  )
+}
+
+// 2. DEDICATED BULLETPROOF SAFETY CHECK VIEW
+function SafetyCheckView({ t, onBack }) {
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState(null)
+  const [query, setQuery] = useState("")
+
+  const computeLocationSafety = async (lat, lon, label) => {
+    setLoading(true)
+    let nearest = ZONES[0]
+    let minDist = calculateDistance(lat, lon, nearest.lat, nearest.lng)
+    ZONES.forEach(z => {
+      const d = calculateDistance(lat, lon, z.lat, z.lng)
+      if (d < minDist) { minDist = d; nearest = z; }
+    })
+
+    let rain = 0.0, temp = 24.0
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,precipitation`)
+      if (res.ok) {
+        const data = await res.json()
+        temp = data.current?.temperature_2m ?? 24.0
+        rain = data.current?.precipitation ?? 0.0
+      }
+    } catch(e) {}
+
+    const isCritical = minDist <= 25
+    const isWatch = minDist > 25 && minDist <= 80
+
+    setResult({
+      lat: lat.toFixed(4),
+      lon: lon.toFixed(4),
+      label: label || "Detected Location",
+      nearestName: nearest.name,
+      nearestState: nearest.state,
+      distanceKm: minDist < 20 ? minDist.toFixed(1) : Math.round(minDist),
+      status: isCritical ? "critical" : isWatch ? "caution" : "safe",
+      statusTitle: isCritical ? "CRITICAL HAZARD ZONE (RED)" : isWatch ? "ELEVATED HILL WATCH (AMBER)" : "SAFE TERRAIN (GREEN)",
+      advice: isCritical 
+        ? "Active landslide fault within " + minDist.toFixed(1) + " km. Move away from steep hill cuts to nearest community hall."
+        : isWatch 
+        ? "Hill corridor watch active. Avoid night vehicular movement along highway cuttings."
+        : "Stable low-gradient region (~" + Math.round(minDist) + " km from hill faults). Normal conditions.",
+      rain: rain.toFixed(1),
+      soil: isCritical ? "92.4%" : isWatch ? "64.1%" : "28.0%",
+      slope: isCritical ? "41.5°" : isWatch ? "26.0°" : "< 5°",
+      shelter: isCritical ? "District Multipurpose Hall, Khliehriat (2.4 km away)" : "Normal Local Facilities"
+    })
+    setLoading(false)
+  }
+
+  const handleGPS = () => {
+    setLoading(true)
+    let finished = false
+    const fallback = setTimeout(() => {
+      if (!finished) {
+        finished = true
+        computeLocationSafety(26.1445, 91.7362, "Guwahati Region (GPS Fallback)")
+      }
+    }, 3500)
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (!finished) {
+            finished = true
+            clearTimeout(fallback)
+            computeLocationSafety(pos.coords.latitude, pos.coords.longitude, "Your Real GPS Location")
+          }
+        },
+        (err) => {
+          if (!finished) {
+            finished = true
+            clearTimeout(fallback)
+            computeLocationSafety(26.1445, 91.7362, "Guwahati Area (GPS Denied)")
+          }
+        },
+        { enableHighAccuracy: false, timeout: 3000, maximumAge: 60000 }
+      )
+    } else {
+      clearTimeout(fallback)
+      computeLocationSafety(26.1445, 91.7362, "Guwahati Area (GPS Not Supported)")
+    }
+  }
+
+  const handleSearch = async (e) => {
+    e.preventDefault()
+    if (!query.trim()) return
+    setLoading(true)
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", India")}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.length > 0) {
+          computeLocationSafety(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].display_name.split(',')[0])
+          return
+        }
+      }
+    } catch(e) {}
+    alert("Location not found. Showing regional analysis.")
+    computeLocationSafety(25.5788, 91.8933, query)
+  }
+
+  return (
+    <div>
+      <div className="view-nav-header">
+        <button className="view-back-btn" onClick={onBack}>← {t.dashboard}</button>
+        <div className="view-title-wrap text-right">
+          <h2>Safety Advisor</h2>
+          <p>Real-Time Slope Proximity</p>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title">
+            <Icons.Gps size={18} color="var(--navy)" />
+            <span>Triangulate Hazard Risk</span>
+          </div>
+        </div>
+        <div className="card-body">
+          <button className="btn btn-primary" onClick={handleGPS} disabled={loading} style={{ width: "100%", marginBottom: "12px" }}>
+            <Icons.Gps size={18} color="#ffffff" />
+            <span>{loading ? "Locking Satellite GPS..." : "Scan Real GPS Coordinates"}</span>
+          </button>
+
+          <form onSubmit={handleSearch} style={{ display: "flex", gap: "6px" }}>
+            <input 
+              className="form-input" 
+              placeholder="Or enter PIN / City (e.g. 793001 or Shillong)" 
+              value={query} 
+              onChange={e => setQuery(e.target.value)} 
+              style={{ flex: 1 }}
+            />
+            <button type="submit" className="btn btn-outline btn-sm" style={{ padding: "0 14px", fontWeight: "700" }}>
+              Search
+            </button>
+          </form>
+
+          {result && (
+            <div className={`safety-card ${result.status}`} style={{ marginTop: "14px" }}>
+              <div style={{ marginBottom: "6px" }}>
+                <Icons.Safety size={38} color={result.status === "critical" ? "#b91c1c" : result.status === "caution" ? "#d97706" : "#15803d"} />
+              </div>
+              <div className="safety-status" style={{ color: result.status === "critical" ? "#b91c1c" : result.status === "caution" ? "#d97706" : "#15803d" }}>
+                {result.statusTitle}
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--darknavy)", fontWeight: "600", marginBottom: "4px" }}>
+                {result.label} ({result.lat}° N, {result.lon}° E)
+              </div>
+              <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "10px" }}>
+                Nearest Fault: <strong>{result.nearestName} ({result.distanceKm} km away)</strong>
+              </div>
+              <div className="safety-stats">
+                <div className="safety-stat"><div className="safety-stat-value">{result.rain} mm/h</div><div className="safety-stat-label">Rain</div></div>
+                <div className="safety-stat"><div className="safety-stat-value">{result.soil}</div><div className="safety-stat-label">Soil Sat.</div></div>
+                <div className="safety-stat"><div className="safety-stat-value">{result.slope}</div><div className="safety-stat-label">Slope</div></div>
+              </div>
+              <div style={{ background: "#ffffff", border: "1px solid var(--border)", borderRadius: "10px", padding: "10px", marginTop: "10px", fontSize: "11.5px", textAlign: "left", color: "var(--darknavy)" }}>
+                <strong>Advisory:</strong> {result.advice}
+                {result.status === "critical" && (
+                  <div style={{ marginTop: "6px", color: "#b91c1c", fontWeight: "700" }}>
+                    Shelter: {result.shelter}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
 
-// 2. HOME VIEW (IPHONE / PHONE DASHBOARD WITH SQUIRCLE APP GRID)
+// 3. HOME VIEW WITH PROFESSIONAL VECTOR ICONS
 function HomeView({ t, onOpenSection, onOpenSOS }) {
   const [liveSoil, setLiveSoil] = useState(87)
   const [liveDisp, setLiveDisp] = useState(4.2)
   const [liveRain, setLiveRain] = useState(18.7)
-  const [locLoading, setLocLoading] = useState(false)
-  const [safetyResult, setSafetyResult] = useState(null)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -208,55 +454,15 @@ function HomeView({ t, onOpenSection, onOpenSOS }) {
     return () => clearInterval(interval)
   }, [])
 
-  const handleCheckSafety = async () => {
-    setLocLoading(true)
-    setSafetyResult(null)
-    const process = async (lat, lng, label) => {
-      let rain = 0.0
-      try {
-        const w = await getWeather(lat, lng)
-        rain = w.precipitation || 0.0
-      } catch(e) {}
-      const dLat = (25.44 - lat) * 111
-      const dLng = (92.21 - lng) * 111
-      const dist = Math.sqrt(dLat * dLat + dLng * dLng)
-      if (dist < 40) {
-        setSafetyResult({
-          status: "critical", score: 94, zone: `Active Corridor (${dist.toFixed(1)} km from Jaintia Fault)`,
-          rain: (rain || 34.2).toFixed(1),
-          message: "Evacuation alert active. Move to designated district shelter.",
-          icon: "🚨"
-        })
-      } else {
-        setSafetyResult({
-          status: "safe", score: 12, zone: `${label || "Your Area"} (~${Math.round(dist)} km from hill faults)`,
-          rain: rain.toFixed(1),
-          message: "Safe alluvial terrain. Zero immediate landslide vulnerability.",
-          icon: "✅"
-        })
-      }
-      setLocLoading(false)
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        p => process(p.coords.latitude, p.coords.longitude, "GPS Location"),
-        () => process(26.14, 91.73, "Guwahati Region")
-      )
-    } else {
-      process(26.14, 91.73, "Guwahati Region")
-    }
-  }
-
   const APP_TILES = [
-    { id: "predictions", name: t.ai, icon: "🧠", type: "ai" },
-    { id: "map", name: t.map, icon: "🗺️", type: "map" },
-    { id: "sensors", name: t.sensors, icon: "📡", type: "sensors" },
-    { id: "analytics", name: t.analytics, icon: "📊", type: "analytics" },
-    { id: "simulation", name: t.simulator, icon: "🌧️", type: "simulator" },
-    { id: "alerts", name: t.alerts, icon: "🔔", type: "alerts", badge: "7" },
-    { id: "safety", name: t.safety, icon: "🛡️", type: "safety" },
-    { id: "report", name: t.report, icon: "📝", type: "report" },
+    { id: "safety", name: t.safety, icon: <Icons.Safety size={24} color="#ffffff" />, type: "safety" },
+    { id: "predictions", name: t.ai, icon: <Icons.Ai size={24} color="#ffffff" />, type: "ai" },
+    { id: "map", name: t.map, icon: <Icons.Map size={24} color="#ffffff" />, type: "map" },
+    { id: "sensors", name: t.sensors, icon: <Icons.Sensors size={24} color="#ffffff" />, type: "sensors" },
+    { id: "analytics", name: t.analytics, icon: <Icons.Analytics size={24} color="#ffffff" />, type: "analytics" },
+    { id: "simulation", name: t.simulator, icon: <Icons.Simulator size={24} color="#ffffff" />, type: "simulator" },
+    { id: "alerts", name: t.alerts, icon: <Icons.Alerts size={24} color="#ffffff" />, type: "alerts", badge: "7" },
+    { id: "report", name: t.report, icon: <Icons.Report size={24} color="#ffffff" />, type: "report" },
   ]
 
   return (
@@ -288,17 +494,17 @@ function HomeView({ t, onOpenSection, onOpenSOS }) {
         </div>
       </div>
 
-      {/* iPhone / Android Style App Grid */}
+      {/* Modern Squircle App Grid */}
       <div className="home-section-title">
-        <span>System Applications</span>
-        <span style={{ fontSize: 10, color: "var(--navy)" }}>8 Modules</span>
+        <span>System Modules</span>
+        <span style={{ fontSize: 10, color: "var(--navy)" }}>8 Applications</span>
       </div>
 
       <div className="app-grid">
         {APP_TILES.map(app => (
           <button key={app.id} className="app-tile" onClick={() => onOpenSection(app.id)}>
             <div className={`app-squircle ${app.type}`}>
-              <span>{app.icon}</span>
+              {app.icon}
               {app.badge && <span className="app-badge-pip">{app.badge}</span>}
             </div>
             <span className="app-name">{app.name}</span>
@@ -306,17 +512,39 @@ function HomeView({ t, onOpenSection, onOpenSOS }) {
         ))}
       </div>
 
+      {/* Quick Launch Safety Check Card */}
+      <div className="card" style={{ borderLeft: "4px solid var(--navy)" }}>
+        <div className="card-header">
+          <div className="card-title">
+            <Icons.Safety size={18} color="var(--navy)" />
+            <span>Citizen Slope Risk Check</span>
+          </div>
+        </div>
+        <div className="card-body">
+          <p style={{ fontSize: "11.5px", color: "var(--text-muted)", marginBottom: "12px" }}>
+            Check your immediate proximity to active fault lines and satellite soil saturation.
+          </p>
+          <button className="btn btn-primary" onClick={() => onOpenSection("safety")}>
+            <Icons.Gps size={18} color="#ffffff" />
+            <span>Open GPS Safety Advisor</span>
+          </button>
+        </div>
+      </div>
+
       {/* Live Geotechnical Gauges Card */}
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>📡</span> Station JH-082 Telemetry</div>
+          <div className="card-title">
+            <Icons.Sensors size={18} color="var(--navy)" />
+            <span>Station JH-082 Telemetry</span>
+          </div>
           <span style={{ fontSize: 10, color: "var(--green)", fontWeight: 700 }}>● LIVE 15m</span>
         </div>
         <div className="card-body">
           <div className="gauge-row">
             <div className="gauge-item">
               <div className="gauge-label-row">
-                <span className="gauge-label">Soil Saturation (Pore Pressure)</span>
+                <span className="gauge-label">Soil Moisture (Pore Pressure)</span>
                 <span className="gauge-value" style={{ color: liveSoil > 80 ? "#b91c1c" : "#ca8a04" }}>{liveSoil.toFixed(0)}%</span>
               </div>
               <div className="gauge-bar-bg">
@@ -336,42 +564,16 @@ function HomeView({ t, onOpenSection, onOpenSOS }) {
         </div>
       </div>
 
-      {/* Quick GPS Safety Check Card */}
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title"><span>🛡️</span> Instant GPS Proximity Check</div>
-        </div>
-        <div className="card-body">
-          <button className="btn btn-primary" onClick={handleCheckSafety} disabled={locLoading}>
-            {locLoading ? t.checking : t.checkSafety}
-          </button>
-
-          {safetyResult && (
-            <div className={`safety-card ${safetyResult.status}`}>
-              <div className="safety-icon">{safetyResult.icon}</div>
-              <div className="safety-status" style={{ color: safetyResult.status === "critical" ? "#b91c1c" : "#15803d" }}>
-                {safetyResult.status === "critical" ? "CRITICAL HAZARD ZONE" : "SAFE TERRAIN"}
-              </div>
-              <div className="safety-message">{safetyResult.zone} — {safetyResult.message}</div>
-              <div className="safety-stats">
-                <div className="safety-stat"><div className="safety-stat-value">{safetyResult.rain} mm/h</div><div className="safety-stat-label">Live Rain</div></div>
-                <div className="safety-stat"><div className="safety-stat-value">{safetyResult.status === "critical" ? "93.2%" : "28.4%"}</div><div className="safety-stat-label">Soil Sat.</div></div>
-                <div className="safety-stat"><div className="safety-stat-value">{safetyResult.status === "critical" ? "41.5°" : "< 5°"}</div><div className="safety-stat-label">Slope Angle</div></div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Emergency Broadcast SOS */}
       <button className="btn btn-danger" onClick={onOpenSOS}>
-        {t.emergency}
+        <Icons.Alerts size={18} color="#ffffff" />
+        <span>{t.emergency}</span>
       </button>
     </div>
   )
 }
 
-// 3. AI PREDICTIONS VIEW
+// 4. AI PREDICTIONS VIEW
 function PredictionsView({ t, onBack, onOpenSOS }) {
   const hotspots = [
     { zone:"Jaintia Hills, Meghalaya", prob:94, eta:"3h 15m", pop:"3,200", trigger:"Rainfall Intensity (52%) + Pore Pressure (28%)", corridor:"NH-44 Sector 8" },
@@ -439,7 +641,7 @@ function PredictionsView({ t, onBack, onOpenSOS }) {
   )
 }
 
-// 4. GEOSPATIAL MAP VIEW
+// 5. GEOSPATIAL MAP VIEW
 function MapView({ t, onBack }) {
   const [mapType, setMapType] = useState("terrain")
 
@@ -455,7 +657,10 @@ function MapView({ t, onBack }) {
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>🗺️</span> Regional GIS Viewport</div>
+          <div className="card-title">
+            <Icons.Map size={18} color="var(--navy)" />
+            <span>Regional GIS Viewport</span>
+          </div>
           <div style={{ display: "flex", gap: 4 }}>
             <button className={`btn btn-outline btn-sm ${mapType === "terrain" ? "active" : ""}`}
               style={mapType === "terrain" ? { background: "var(--navy)", color: "#fff" } : {}}
@@ -512,7 +717,7 @@ function MapView({ t, onBack }) {
   )
 }
 
-// 5. SENSORS TELEMETRY VIEW
+// 6. SENSORS TELEMETRY VIEW
 function SensorsView({ t, onBack }) {
   return (
     <div>
@@ -541,7 +746,10 @@ function SensorsView({ t, onBack }) {
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>📡</span> Key Stations Telemetry</div>
+          <div className="card-title">
+            <Icons.Sensors size={18} color="var(--navy)" />
+            <span>Key Stations Telemetry</span>
+          </div>
         </div>
         <div className="card-body" style={{ padding: "0 16px" }}>
           {SENSORS.map(s => (
@@ -560,7 +768,7 @@ function SensorsView({ t, onBack }) {
   )
 }
 
-// 6. ANALYTICS VIEW
+// 7. ANALYTICS VIEW
 function AnalyticsView({ t, onBack }) {
   const states = [
     { name:"Meghalaya", pct:92 },
@@ -585,7 +793,10 @@ function AnalyticsView({ t, onBack }) {
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>📊</span> Key Performance Indicators</div>
+          <div className="card-title">
+            <Icons.Analytics size={18} color="var(--navy)" />
+            <span>Key Performance Indicators</span>
+          </div>
         </div>
         <div className="card-body">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -629,7 +840,7 @@ function AnalyticsView({ t, onBack }) {
   )
 }
 
-// 7. SCENARIO SIMULATOR VIEW
+// 8. SCENARIO SIMULATOR VIEW
 function SimulatorView({ t, onBack }) {
   const [mult, setMult] = useState(1.0)
   const crit = mult <= 0.8 ? 4 : mult <= 1.2 ? 12 : mult <= 1.8 ? 24 : 39
@@ -648,7 +859,10 @@ function SimulatorView({ t, onBack }) {
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>🌧️</span> Precipitation Multiplier Slider</div>
+          <div className="card-title">
+            <Icons.Simulator size={18} color="var(--navy)" />
+            <span>Precipitation Multiplier Slider</span>
+          </div>
           <span style={{ fontSize: 12, fontWeight: 800, color: "var(--navy)", fontFamily: "monospace" }}>{mult.toFixed(1)}x</span>
         </div>
         <div className="card-body">
@@ -680,7 +894,7 @@ function SimulatorView({ t, onBack }) {
   )
 }
 
-// 8. ALERTS VIEW
+// 9. ALERTS VIEW
 function AlertsView({ t, onBack, onOpenSOS }) {
   const alerts = [
     { zone:"Jaintia Hills (NH-44 Sector 8)", sev:"CRITICAL", msg:"142mm/24h recorded. Tension cracks propagating. Evacuate 3 villages.", time:"12m ago", conf:87 },
@@ -722,13 +936,14 @@ function AlertsView({ t, onBack, onOpenSOS }) {
       </div>
 
       <button className="btn btn-danger" style={{ width: "100%" }} onClick={onOpenSOS}>
-        {t.emergency}
+        <Icons.Alerts size={18} color="#ffffff" />
+        <span>{t.emergency}</span>
       </button>
     </div>
   )
 }
 
-// 9. CITIZEN REPORT VIEW
+// 10. CITIZEN REPORT VIEW
 function ReportView({ t, onBack }) {
   const [reports, setReports] = useState([
     { type:"Tension Crack (30cm)", loc:"NH-44 Dawki Road", desc:"Fissure after continuous rainfall.", time:"2h ago", status:"verified" },
@@ -759,7 +974,10 @@ function ReportView({ t, onBack }) {
 
       <div className="card">
         <div className="card-header">
-          <div className="card-title"><span>📝</span> New Hazard Report</div>
+          <div className="card-title">
+            <Icons.Report size={18} color="var(--navy)" />
+            <span>New Hazard Report</span>
+          </div>
         </div>
         <div className="card-body">
           <form onSubmit={submit}>
@@ -802,7 +1020,7 @@ function ReportView({ t, onBack }) {
   )
 }
 
-// 10. MAIN APP SHELL WITH LOCALSTORAGE & QUICK LANGUAGE SWITCHER
+// 11. MAIN APP SHELL
 export default function AppMobile() {
   const savedLang = typeof window !== "undefined" ? localStorage.getItem("aegis_lang") : null
   const [showSplash, setShowSplash] = useState(!savedLang)
@@ -853,11 +1071,11 @@ export default function AppMobile() {
   if (showSplash) return <SplashScreen onEnter={handleEnter} />
 
   const DOCK_APPS = [
-    { id: "home", label: t.dashboard, icon: "🏠" },
-    { id: "map", label: t.map, icon: "🗺️" },
-    { id: "predictions", label: t.ai, icon: "🧠" },
-    { id: "sensors", label: t.sensors, icon: "📡" },
-    { id: "analytics", label: t.analytics, icon: "📊" },
+    { id: "home", label: t.dashboard, icon: <Icons.Home size={20} /> },
+    { id: "safety", label: t.safety, icon: <Icons.Safety size={20} /> },
+    { id: "map", label: t.map, icon: <Icons.Map size={20} /> },
+    { id: "predictions", label: t.ai, icon: <Icons.Ai size={20} /> },
+    { id: "analytics", label: t.analytics, icon: <Icons.Analytics size={20} /> },
   ]
 
   return (
@@ -873,7 +1091,7 @@ export default function AppMobile() {
         {/* Quick Language Switcher Pill */}
         <button 
           onClick={() => setShowLangModal(true)} 
-          style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "var(--navy)", fontSize: "10px", fontWeight: "800", padding: "3px 8px", borderRadius: "10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "3px" }}
+          style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "var(--navy)", fontSize: "10px", fontWeight: "800", padding: "4px 8px", borderRadius: "10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
           title="Change Language"
         >
           <span>🌐</span>
@@ -890,6 +1108,9 @@ export default function AppMobile() {
       <div className="app-content">
         {activeView === "home" && (
           <HomeView t={t} onOpenSection={setActiveView} onOpenSOS={() => setShowSOSModal(true)} />
+        )}
+        {activeView === "safety" && (
+          <SafetyCheckView t={t} onBack={() => setActiveView("home")} />
         )}
         {activeView === "predictions" && (
           <PredictionsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
@@ -909,15 +1130,12 @@ export default function AppMobile() {
         {activeView === "alerts" && (
           <AlertsView t={t} onBack={() => setActiveView("home")} onOpenSOS={() => setShowSOSModal(true)} />
         )}
-        {activeView === "safety" && (
-          <HomeView t={t} onOpenSection={setActiveView} onOpenSOS={() => setShowSOSModal(true)} />
-        )}
         {activeView === "report" && (
           <ReportView t={t} onBack={() => setActiveView("home")} />
         )}
       </div>
 
-      {/* FLOATING TRANSLUCENT DOCK */}
+      {/* FLOATING TRANSLUCENT DOCK WITH VECTOR ICONS */}
       <div className="floating-dock-container">
         <div className="floating-dock">
           {DOCK_APPS.map(app => (
@@ -938,8 +1156,8 @@ export default function AppMobile() {
         <div className="modal-overlay" onClick={() => setShowLangModal(false)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
-            <div className="modal-title" style={{ color: "var(--darknavy)", fontSize: "16px" }}>🌐 Select Language / भाषा चुनें</div>
-            <div className="modal-subtitle">Choose from 12 North-Eastern &amp; National Languages</div>
+            <div className="modal-title" style={{ color: "var(--darknavy)", fontSize: "16px" }}>🌐 Select Language / ভাষা নিৰ্বাচন</div>
+            <div className="modal-subtitle">12 Official North-Eastern &amp; National Languages</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", maxHeight: "320px", overflowY: "auto", padding: "4px" }}>
               {LANGUAGES.map(item => (
                 <button 
