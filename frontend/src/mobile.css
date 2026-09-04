@@ -1389,3 +1389,360 @@ input[type=range]::-webkit-slider-thumb {
   width: auto;
   display: block;
 }
+
+
+
+/* ======================================================
+   OFFLINE DISASTER MODE & P2P BLUETOOTH MESH STYLES
+   ====================================================== */
+.network-toggle-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.network-toggle-pill.online {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.network-toggle-pill.offline {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+  animation: pulseOfflinePill 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseOfflinePill {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
+}
+
+.net-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.net-pulse-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.net-pulse-dot.offline {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+  animation: blink 1s infinite;
+}
+
+.offline-emergency-banner {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.offline-banner-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.offline-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #92400e;
+  letter-spacing: 0.5px;
+}
+
+.btn-switch-online {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.offline-banner-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #78350f;
+  line-height: 1.2;
+}
+
+.offline-banner-desc {
+  font-size: 10.5px;
+  color: #92400e;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+/* OFFLINE SUBNAV TABS */
+.offline-subnav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.offline-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.offline-tab-btn:active {
+  transform: scale(0.92);
+}
+
+.offline-tab-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(30, 64, 175, 0.2);
+}
+
+.offline-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.offline-section-header h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--darknavy);
+  margin-bottom: 2px;
+}
+
+.offline-section-header p {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.cache-verified-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 8.5px;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* MESH RADAR CARD */
+.mesh-radar-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 16px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.mesh-radar-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.25);
+}
+
+.mesh-radar-circle.scanning {
+  animation: radarPulseRing 1.5s infinite ease-out;
+}
+
+@keyframes radarPulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+  70% { box-shadow: 0 0 0 24px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+.radar-blip {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #34d399;
+  animation: blipFade 2s infinite ease-in-out;
+}
+
+.radar-blip.blip-1 { top: 18px; left: 16px; animation-delay: 0.2s; }
+.radar-blip.blip-2 { top: 58px; right: 18px; animation-delay: 0.8s; }
+.radar-blip.blip-3 { bottom: 12px; left: 42px; animation-delay: 1.4s; }
+
+@keyframes blipFade {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* PEER LIST */
+.peer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.peer-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+}
+
+.peer-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.peer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.peer-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--darknavy);
+  line-height: 1.2;
+}
+
+.peer-meta {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.peer-sync-btn {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: var(--navy);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.peer-sync-btn:active {
+  transform: scale(0.92);
+  background: var(--navy);
+  color: #ffffff;
+}
+
+/* EMERGENCY CALL BUTTONS */
+.emergency-call-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emergency-call-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--red);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.emergency-call-btn:active {
+  transform: scale(0.96);
+  background: #fef2f2;
+}
+
+.call-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.call-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.call-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--darknavy);
+}
+
+.call-desc {
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+.call-number {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--red);
+  font-family: monospace;
+}
