@@ -1,24 +1,8 @@
 {
-  "name": "aegis-lews-v2",
-  "version": "2.0.0",
+  "name": "arabian-drops",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@capacitor/android": "^8.5.1",
-    "@capacitor/cli": "^8.5.1",
-    "@capacitor/core": "^8.5.1",
-    "axios": "^1.6.0",
-    "leaflet": "^1.9.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-leaflet": "^4.2.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^5.0.0"
+    "build": "node -e \"console.log('Arabian Drops ready')\""
   }
 }

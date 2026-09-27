@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Arabian Drops — test suite</title>
+<style>
+  body { font: 13px/1.55 ui-monospace, Menlo, Consolas, monospace; background: #111; color: #eee; padding: 24px; margin: 0; }
+  h1 { font-size: 14px; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 14px; }
+  #out { white-space: pre-wrap; }
+  .pass { color: #6ee7a8; }
+  .fail { color: #ff7b72; }
+  .group { color: #8ab4f8; }
+  .summary { margin-top: 18px; font-weight: 700; font-size: 14px; }
+  #frame { width: 400px; height: 760px; border: 1px solid #333; margin-top: 18px; display: block; }
+</style>
+</head>
+<body>
+<h1>Arabian Drops — suite</h1>
+<pre id="out">running…</pre>
+<iframe id="frame" title="page under test"></iframe>
+
+<script>
+/* Drives the real pages in an iframe. Tool-level automation cannot do this: the
+   round trip into the browser outlives the intro's 3.3s life, so the overlay is
+   always gone before an external assertion can run. Results land on
+   window.__results. */
+
+const results = [];
+const out = document.getElementById("out");
+const frame = document.getElementById("frame");
+
+const group = (name) => { out.innerHTML += `\n\n<span class="group">— ${name} —</span>`; };
+
+function record(name, pass, detail) {
+  results.push({ name, pass, detail });
+  out.innerHTML += `\n<span class="${pass ? "pass" : "fail"}">${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}</span>`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, timeout = 4000) {
+  const start = Date.now();
+  for (;;) {
+    let v = null;
+    try { v = fn(); } catch (e) {}
+    if (v) return v;
+    if (Date.now() - start > timeout) return null;
+    await sleep(60);
+  }
+}
+
+/**
+ * Load a page in the iframe with a clean session, then let its script run.
+ * Paths resolve from the site root — this harness lives in /tests/, so a bare
+ * "index.html" would resolve to /tests/index.html and 404.
+ */
+async function load(path, { fresh = true } = {}) {
+  const url = /^(https?:|\/|\.\.\/)/.test(path) ? path : "../" + path;
+  if (fresh) {
+    try { frame.contentWindow.sessionStorage.clear(); } catch (e) {}
+    try { frame.contentWindow.localStorage.clear(); } catch (e) {}
+  }
+  await new Promise((resolve) => {
+    frame.addEventListener("load", resolve, { once: true });
+    frame.src = url + (url.includes("?") ? "&" : "?") + "cachebust=" + Date.now();
+  });
+  await sleep(200);
+  return { win: frame.contentWindow, doc: frame.contentWindow.document };
+}
+
+/** One throwing test must not take the whole suite down with it. */
+async function test(name, fn) {
+  try {
+    const r = await fn();
+    record(name, !!(r && r.pass), r && r.detail);
+  } catch (err) {
+    record(name, false, "threw: " + ((err && err.message) || err));
+  }
+}
+
+const pressKey = (win, key) =>
+  win.document.dispatchEvent(new win.KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+
+function keyframeNames(doc) {
+  const names = [];
+  for (const sheet of doc.styleSheets) {
+    let rules = [];
+    try { rules = [...sheet.cssRules]; } catch (e) { continue; }
+    for (const r of rules) if (r.cssText.startsWith("@keyframes")) names.push(r.name);
+  }
+  return names;
+}
+
+(async function run() {
+  group("Intro overlay");
+
+  await test("renders full-viewport and locks scroll", async () => {
+    const { win, doc } = await load("index.html?intro=1");
+    const overlay = doc.getElementById("intro");
+    if (!overlay) return { pass: false, detail: "no #intro in the document" };
+    const r = overlay.getBoundingClientRect();
+    return {
+      pass: !overlay.hidden &&
+        Math.round(r.width) === win.innerWidth &&
+        Math.round(r.height) === win.innerHeight &&
+        doc.body.classList.contains("ad-no-scroll"),
+      detail: `overlay ${Math.round(r.width)}x${Math.round(r.height)} vs viewport ${win.innerWidth}x${win.innerHeight}`
+    };
+  });
+
+  await test("emits exactly 32 mist particles", async () => {
+    const { doc } = await load("index.html?intro=1");
+    const n = doc.querySelectorAll(".mist__p").length;
+    return { pass: n === 32, detail: `found ${n}` };
+  });
+
+  await test("particle distance / delay / duration in range", async () => {
+    const { doc } = await load("index.html?intro=1");
+    const rx = /--tx:\s*(-?[\d.]+)px;\s*--ty:\s*(-?[\d.]+)px;\s*--delay:\s*([\d.]+)s;\s*--d:\s*([\d.]+)s/;
+    let ok = true, seen = 0, bad = "";
+    for (const p of doc.querySelectorAll(".mist__p")) {
+      const m = p.style.cssText.match(rx);
+      if (!m) { ok = false; bad = "particle missing vars"; break; }
+      const dist = Math.hypot(+m[1], +m[2]), delay = +m[3], dur = +m[4];
+      seen++;
+      if (dist < 34 || dist > 166) { ok = false; bad = `distance ${dist.toFixed(1)}px out of 35-165`; }
+      else if (delay < 0.81 || delay > 1.28) { ok = false; bad = `delay ${delay}s out of 0.82-1.27`; }
+      else if (dur < 0.54 || dur > 1.21) { ok = false; bad = `duration ${dur}s out of 0.55-1.20`; }
+      if (!ok) break;
+    }
+    return { pass: ok && seen === 32, detail: bad || `${seen} verified` };
+  });
+
+  await test("all five intro keyframes defined", async () => {
+    const { doc } = await load("index.html?intro=1");
+    const names = keyframeNames(doc);
+    const want = ["markIn", "brandIn", "mistSpray", "lineExpand", "fadeUp"];
+    const missing = want.filter((w) => !names.includes(w));
+    return { pass: missing.length === 0, detail: missing.length ? "missing " + missing.join(", ") : names.join(", ") };
+  });
+
+  await test("monogram loads via srcset", async () => {
+    const { win, doc } = await load("index.html?intro=1");
+    const mark = doc.querySelector(".intro__mark");
+    if (!mark) return { pass: false, detail: "no .intro__mark" };
+    await waitFor(() => mark.complete, 3000);
+    return {
+      pass: mark.complete && mark.naturalWidth > 0 && /logo-mark-\d+\.png$/.test(new win.URL(mark.currentSrc).pathname),
+      detail: `${mark.naturalWidth}x${mark.naturalHeight} from ${mark.currentSrc ? mark.currentSrc.split("/").pop() : "nothing"}`
+    };
+  });
+
+  await test("sound defaults to off", async () => {
+    const { doc } = await load("index.html?intro=1");
+    const btn = doc.getElementById("introSound");
+    return { pass: btn.getAttribute("aria-pressed") === "false", detail: "aria-pressed=" + btn.getAttribute("aria-pressed") };
+  });
+
+  await test("Escape dismisses and releases scroll lock", async () => {
+    const { win, doc } = await load("index.html?intro=1");
+    const overlay = doc.getElementById("intro");
+    const wasVisible = !overlay.hidden;
+    pressKey(win, "Escape");
+    const fading = overlay.classList.contains("is-fading");
+    await sleep(1000);
+    return {
+      pass: wasVisible && fading && overlay.hidden && !doc.body.classList.contains("ad-no-scroll"),
+      detail: `visible=${wasVisible} fading=${fading} hidden=${overlay.hidden} locked=${doc.body.classList.contains("ad-no-scroll")}`
+    };
+  });
+
+  await test("dismissal recorded for the session", async () => {
+    const { win } = await load("index.html?intro=1");
+    pressKey(win, "Escape");
+    await sleep(80);
+    return { pass: win.sessionStorage.getItem("ad:intro-seen") === "1", detail: "ad:intro-seen=" + win.sessionStorage.getItem("ad:intro-seen") };
+  });
+
+  await test("second page view in a session skips the intro", async () => {
+    await load("index.html?intro=1", { fresh: false });
+    frame.contentWindow.sessionStorage.setItem("ad:intro-seen", "1");
+    await new Promise((r) => { frame.addEventListener("load", r, { once: true }); frame.src = "../index.html?cb=" + Date.now(); });
+    await sleep(240);
+    const d = frame.contentWindow.document;
+    return {
+      pass: d.getElementById("intro").hidden && !d.body.classList.contains("ad-no-scroll"),
+      detail: `hidden=${d.getElementById("intro").hidden}`
+    };
+  });
+
+  await test("?intro=0 suppresses the intro without locking scroll", async () => {
+    const { doc } = await load("index.html?intro=0");
+    return {
+      pass: doc.getElementById("intro").hidden && !doc.body.classList.contains("ad-no-scroll"),
+      detail: `locked=${doc.body.classList.contains("ad-no-scroll")}`
+    };
+  });
+
+  await test("auto-dismisses on its own without interaction", async () => {
+    const { doc } = await load("index.html?intro=1");
+    const overlay = doc.getElementById("intro");
+    const visibleAtStart = !overlay.hidden;
+    // Poll rather than sleep a fixed 4.4s: background tabs throttle timers, so a
+    // fixed margin against the 3.3s + 0.85s fade is flaky.
+    const hid = await waitFor(() => overlay.hidden, 9000);
+    return {
+      pass: visibleAtStart && !!hid && !doc.body.classList.contains("ad-no-scroll"),
+      detail: `visibleAtStart=${visibleAtStart} hidden=${overlay.hidden}`
+    };
+  });
+
+  await test("reduced motion disables the intro (source + CSS)", async () => {
+    // The boot logic lives in app.js, not the page — checking the page alone
+    // reports a false failure.
+    const js = await (await fetch("../assets/js/app.js")).text();
+    const css = await (await fetch("../assets/css/site.css")).text();
+    const hasQuery = css.includes("prefers-reduced-motion: reduce");
+    const consults = /reduceMotion\s*=[^;]*prefers-reduced-motion/.test(js);
+    const bootGuard = /!seen\s*&&\s*!reduceMotion/.test(js);
+    return { pass: hasQuery && consults && bootGuard, detail: `css=${hasQuery} reads=${consults} bootGuard=${bootGuard}` };
+  });
+
+  group("Storefront");
+
+  await test("every catalogue card shows a price", async () => {
+    const { doc } = await load("collection.html");
+    await waitFor(() => doc.querySelectorAll("#collectionGrid .card").length, 4000);
+    const cards = [...doc.querySelectorAll("#collectionGrid .card")];
+    const priced = cards.filter((c) => /₹\s?[\d,]+/.test(c.textContent));
+    return {
+      pass: cards.length === 9 && priced.length === 9,
+      detail: `${priced.length}/${cards.length} priced${priced[0] ? ' · first "' + priced[0].textContent.replace(/\s+/g, " ").trim() + '"' : ""}`
+    };
+  });
+
+  await test("prices match the live catalogue (₹300 and ₹330 present)", async () => {
+    const { doc } = await load("collection.html");
+    await waitFor(() => doc.querySelectorAll("#collectionGrid .card").length, 4000);
+    const text = doc.getElementById("collectionGrid").textContent;
+    return { pass: /₹300/.test(text) && /₹330/.test(text), detail: `₹300=${/₹300/.test(text)} ₹330=${/₹330/.test(text)}` };
+  });
+
+  await test("category filter changes the grid", async () => {
+    const { win, doc } = await load("collection.html");
+    await waitFor(() => doc.querySelectorAll("#filterChips button").length, 4000);
+    const before = doc.querySelectorAll("#collectionGrid .card").length;
+    const men = [...doc.querySelectorAll("#filterChips button")].find((b) => b.textContent.trim() === "Men");
+    if (!men) return { pass: false, detail: "no Men chip" };
+    men.dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
+    await sleep(200);
+    const after = doc.querySelectorAll("#collectionGrid .card").length;
+    return { pass: before === 9 && after === 2, detail: `all=${before} men=${after} (catalogue has 2 men's attars)` };
+  });
+
+  await test("product page shows both sizes at real prices", async () => {
+    const { doc } = await load("product.html?id=diamond-touch-attar");
+    await waitFor(() => doc.getElementById("sizePicker"), 4000);
+    const sizes = [...doc.querySelectorAll("#sizePicker button")].map((b) => b.textContent.replace(/\s+/g, " ").trim());
+    const ok = sizes.length === 2 && /6ml/.test(sizes[0]) && /₹330/.test(sizes[0]) && /12ml/.test(sizes[1]) && /₹550/.test(sizes[1]);
+    return { pass: ok, detail: sizes.join(" | ") };
+  });
+
+  await test("add to cart persists and updates the badge", async () => {
+    const { win, doc } = await load("product.html?id=secret-affair");
+    await waitFor(() => doc.getElementById("pdpAdd"), 4000);
+    doc.getElementById("pdpAdd").dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
+    await sleep(250);
+    const stored = JSON.parse(win.localStorage.getItem("ad:cart") || "[]");
+    const cart = win.AD ? win.AD.cart() : [];
+    const badge = doc.getElementById("cartCount").textContent;
+    return {
+      pass: cart.length === 1 && cart[0].size === "6ml" && stored.length === 1 && badge === "1",
+      detail: `cart=${JSON.stringify(cart)} badge=${badge}`
+    };
+  });
+
+  await test("delivery charged under ₹999 and free above it", async () => {
+    const { win } = await load("product.html?id=secret-affair");
+    await waitFor(() => win.AD, 4000);
+    win.AD.clearCart();
+    win.AD.addToCart("secret-affair", "6ml", 1);      // ₹300
+    await sleep(100);
+    const under = win.document.getElementById("cartDelivery").textContent.trim();
+    win.AD.addToCart("grace-noir-attar", "12ml", 2);  // +₹1100 → ₹1400
+    await sleep(100);
+    const over = win.document.getElementById("cartDelivery").textContent.trim();
+    return { pass: /60/.test(under) && /Free/i.test(over), detail: `₹300 → "${under}" · ₹1400 → "${over}"` };
+  });
+
+  await test("footer links are real (tel, mailto, maps, whatsapp)", async () => {
+    const { doc } = await load("index.html?intro=0");
+    const links = [...doc.querySelectorAll(".footer a")].map((a) => a.getAttribute("href") || "");
+    const tel = links.some((h) => h.startsWith("tel:"));
+    const mail = links.some((h) => h.startsWith("mailto:"));
+    const maps = links.some((h) => /google\.com\/maps/.test(h));
+    const wa = links.some((h) => /wa\.me/.test(h));
+    return {
+      pass: tel && mail && maps && wa && links.length >= 8,
+      detail: `${links.length} links · tel=${tel} mail=${mail} maps=${maps} wa=${wa}`
+    };
+  });
+
+  await test("all five pages styled, each with its own title", async () => {
+    const titles = new Set();
+    const problems = [];
+    for (const p of ["index.html", "collection.html", "product.html?id=emir-attar", "about.html", "contact.html"]) {
+      const { win, doc } = await load(p);
+      if (!doc.title) problems.push(`${p} has no title`);
+      if (titles.has(doc.title)) problems.push(`${p} duplicates title`);
+      titles.add(doc.title);
+      const bg = win.getComputedStyle(doc.body).backgroundColor;
+      if (bg !== "rgb(239, 238, 238)") problems.push(`${p} bg=${bg}`);
+    }
+    return { pass: problems.length === 0, detail: problems.length ? problems.join(", ") : `${titles.size} unique titles` };
+  });
+
+  group("Defect regressions from the live-site audit");
+
+  await test("no page ships a Vite favicon", async () => {
+    const { doc } = await load("index.html?intro=0");
+    const icon = doc.querySelector('link[rel*="icon"]');
+    return { pass: !!icon && /logo-mark/.test(icon.getAttribute("href")), detail: icon ? icon.getAttribute("href") : "none" };
+  });
+
+  await test("hover images are not fetched until hovered", async () => {
+    const { win, doc } = await load("index.html?intro=0");
+    await waitFor(() => doc.querySelectorAll("#featuredGrid .card").length, 4000);
+    await sleep(400);
+    const cards = doc.querySelectorAll("#featuredGrid .card").length;
+    const fetched = win.performance.getEntriesByType("resource")
+      .filter((r) => /img\/products\//.test(r.name));
+    // Assert the intent directly: no second-angle image (-2.webp) is fetched on
+    // load. The page also shows the signature product, so a bare count of
+    // primaries is legitimately cards + 1 rather than cards.
+    const hoverFetched = fetched.filter((r) => /-2\.webp$/.test(r.name)).length;
+    const primaries = fetched.filter((r) => /-1\.webp$/.test(r.name)).length;
+    return {
+      pass: hoverFetched === 0 && primaries >= cards,
+      detail: `${cards} cards · ${primaries} primaries · ${hoverFetched} hover images fetched (want 0)`
+    };
+  });
+
+  await test("homepage payload stays under 500 KB", async () => {
+    const { win } = await load("index.html?intro=0");
+    await sleep(300);
+    const entries = win.performance.getEntriesByType("resource");
+    const bytes = entries.reduce((a, r) => a + (r.transferSize || 0), 0);
+    const biggest = entries.reduce((m, r) => Math.max(m, r.transferSize || 0), 0);
+    return {
+      pass: bytes < 500 * 1024 && biggest < 150 * 1024,
+      detail: `${(bytes / 1024).toFixed(0)} KB total, largest single resource ${(biggest / 1024).toFixed(0)} KB`
+    };
+  });
+
+  await test("all text clears 4.5:1 on the canvas", async () => {
+    const { win, doc } = await load("index.html?intro=0");
+    const canvas = [239, 238, 238];
+    const lum = (r, g, b) => {
+      const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const ratio = (a, b) => {
+      const l1 = lum(a[0], a[1], a[2]), l2 = lum(b[0], b[1], b[2]);
+      return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    };
+    // Composite a possibly-translucent colour over the canvas before measuring.
+    const effective = (css) => {
+      const m = css.match(/[\d.]+/g).map(Number);
+      const a = m.length > 3 ? m[3] : 1;
+      return [0, 1, 2].map((i) => Math.round(m[i] * a + canvas[i] * (1 - a)));
+    };
+    const selectors = ["body", ".lede", ".label", ".card__name", ".card__blurb", ".card__price", ".card__price small", "figcaption", ".trust strong", ".facts .k"];
+    const fails = [];
+    let checked = 0;
+    for (const sel of selectors) {
+      const el = doc.querySelector(sel);
+      if (!el) { fails.push(sel + " missing"); continue; }
+      const cs = win.getComputedStyle(el);
+      const r = ratio(effective(cs.color), canvas);
+      checked++;
+      if (r < 4.5) fails.push(`${sel} ${r.toFixed(2)}:1`);
+    }
+    return { pass: fails.length === 0, detail: fails.length ? fails.join(", ") : `${checked} selectors all >= 4.5:1` };
+  });
+
+  await test("mobile tap targets meet 44px", async () => {
+    const { win, doc } = await load("index.html?intro=0");
+    const small = [];
+    for (const sel of [".btn", ".util", ".chip", ".qty button", ".cat__overlay"]) {
+      const el = doc.querySelector(sel);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height > 0 && r.height < 44) small.push(`${sel} ${Math.round(r.height)}px`);
+    }
+    return { pass: small.length === 0, detail: small.length ? "under 44px: " + small.join(", ") : "all sampled controls >= 44px" };
+  });
+
+  const failed = results.filter((r) => !r.pass);
+  const summary = `${results.length - failed.length}/${results.length} passed`;
+  out.innerHTML += `\n\n<span class="summary ${failed.length ? "fail" : "pass"}">${summary}</span>`;
+  window.__results = { summary, failures: failed, all: results };
+  window.__done = true;
+})();
+</script>
+</body>
+</html>

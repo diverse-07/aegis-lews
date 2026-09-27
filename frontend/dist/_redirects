@@ -1,0 +1,12 @@
+# Honoured by Netlify on zip and drag-and-drop deploys, where netlify.toml is not
+# read. Keep in sync with netlify.toml.
+
+/collection     /collection.html   200
+/product/*      /product.html      200
+/about          /about.html        200
+/contact        /contact.html      200
+/cart           /collection.html   302
+/desktop.html   /index.html        302
+
+# Anything else that doesn't exist gets the branded 404 rather than a bare one.
+/*              /404.html          404
