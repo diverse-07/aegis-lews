@@ -1,9 +1,0 @@
-# Runtime artifact written by tools/serve.mjs
-.preview-server.pid
-
-# Deploy bundle produced by tools/deploy.mjs --dry-run
-arabian-drops-deploy.zip
-
-# Unprocessed source images, re-fetched by tools/prepare-assets.mjs.
-# Keeping them out of git; the optimised derivatives in img/ are tracked.
-raw/

@@ -1,0 +1,11 @@
+source            logo-source.png  1024x1024
+ink bounds        x 147..886  y 211..826  (740x616, 43% of canvas)
+vertical bands    0..392, 446..556, 581..615
+monogram          y 0..392 -> tight 472x393, squared 472x472
+
+output                          pixels      bytes
+logo-mark-128.png              128x128        16141
+logo-mark-256.png              256x256        61477
+logo-lockup-448.png            448x373       125361
+
+total written     202979 bytes  |  original 1486932 bytes  |  logo slot on mobile was 112x112 at 1.42 MB

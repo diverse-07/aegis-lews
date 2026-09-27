@@ -6,8 +6,8 @@
 # the Netlify site's base directory is set to `arabian-drops`.
 
 [build]
-  publish = "."
-  command = ""
+  publish = "dist"
+  command = "node build.js"
 
 # Old links pointed at the current React app's client-side routes. Those 404 on a
 # hard load today, so any that are out in the wild (ads, Google, WhatsApp shares)

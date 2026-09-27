@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>All Attars | Arabian Drops — Kamla Nagar, Delhi</title>
+<meta name="description" content="All nine Arabian Drops attars. Pure, non-alcoholic, oil-based. 6ml from ₹300, 12ml from ₹500. Filter by unisex, men and women." />
+<meta name="theme-color" content="#0a0a0a" />
+<link rel="icon" type="image/png" href="img/logo-mark-128.png" />
+<script>document.documentElement.classList.add("js");</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Prata&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/site.css" />
+</head>
+<body data-page="collection">
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>100% non-alcoholic attars</span><span>Free delivery above &#8377;999</span><span>Cash on delivery available</span><span>Handcrafted in Kamla Nagar, Delhi</span>
+    <span>100% non-alcoholic attars</span><span>Free delivery above &#8377;999</span><span>Cash on delivery available</span><span>Handcrafted in Kamla Nagar, Delhi</span>
+  </div>
+</div>
+
+<header class="header" id="header">
+  <a class="brand" href="index.html" aria-label="Arabian Drops, home">
+    <img src="img/logo-mark-128.png" srcset="img/logo-mark-128.png 128w, img/logo-mark-256.png 256w" sizes="40px" width="128" height="128" alt="" />
+    <span class="brand__text">
+      <span class="brand__name">Arabian Drops</span>
+      <span class="brand__sub">Attars &amp; Perfumes</span>
+    </span>
+  </a>
+  <nav class="nav" aria-label="Primary">
+    <a href="collection.html" aria-current="page">All attars</a>
+    <a href="collection.html?cat=Unisex">Unisex</a>
+    <a href="collection.html?cat=Men">Men</a>
+    <a href="collection.html?cat=Women">Women</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <div class="utils">
+    <a class="util util--help" href="contact.html">Help</a>
+    <button class="util" type="button" data-open-cart aria-label="Open cart">
+      Cart<span class="util__count" id="cartCount" hidden>0</span>
+    </button>
+    <button class="util burger" type="button" data-open-drawer aria-label="Open menu">Menu</button>
+  </div>
+</header>
+
+<div class="scrim" id="scrim" data-open="false"></div>
+
+<aside class="drawer" id="drawer" data-open="false" aria-label="Menu">
+  <div class="drawer__top">
+    <span class="label">Menu</span>
+    <button class="util" type="button" data-close>Close</button>
+  </div>
+  <nav>
+    <a href="collection.html">All attars</a>
+    <a href="collection.html?cat=Unisex">Unisex</a>
+    <a href="collection.html?cat=Men">Men</a>
+    <a href="collection.html?cat=Women">Women</a>
+    <a href="about.html">About us</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <div style="margin-top:auto;padding-top:26px">
+    <p class="label">WhatsApp</p>
+    <p style="margin:6px 0 0"><a class="link-u" href="https://wa.me/917982561255" target="_blank" rel="noopener">+91 79825 61255</a></p>
+  </div>
+</aside>
+
+<div id="panels"></div>
+
+<main>
+  <section class="section wrap">
+    <p class="label" data-reveal>Nine attars &middot; two sizes each</p>
+    <h1 class="display" data-reveal style="margin-top:14px">The collection</h1>
+    <p class="lede" data-reveal style="margin-top:16px">
+      Pure oil, no alcohol, no filler. Everything here is poured by hand in Kamla Nagar
+      and priced the same in the shop as it is online.
+    </p>
+
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:34px">
+      <div class="filters" id="filterChips" role="group" aria-label="Filter by wearer"></div>
+      <span class="filters__count" id="filterCount"></span>
+    </div>
+
+    <div style="margin-top:18px">
+      <label class="label" for="sortSelect" style="display:block;margin-bottom:8px">Sort by</label>
+      <select id="sortSelect" style="padding:12px 14px;background:#fff;border:1px solid var(--hairline);border-radius:0;min-width:210px">
+        <option value="featured">Featured</option>
+        <option value="low">Price &middot; low to high</option>
+        <option value="high">Price &middot; high to low</option>
+      </select>
+    </div>
+
+    <div class="grid" id="collectionGrid" style="margin-top:34px"></div>
+  </section>
+
+  <section class="band">
+    <div class="band__inner">
+      <h2>Not sure which to pick?</h2>
+      <p>Tell us what you normally wear and we'll suggest two or three. We send sample sets too.</p>
+      <a class="btn" href="https://wa.me/917982561255" target="_blank" rel="noopener">Ask on WhatsApp</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand">
+          <img src="img/logo-mark-128.png" alt="" width="128" height="128" />
+          <span><strong>Arabian Drops</strong><span>Attars &amp; Perfumes</span></span>
+        </div>
+        <p style="font-size:14px;max-width:38ch">Pure, non-alcoholic attars handcrafted in Kamla Nagar, Delhi. Every bottle poured, capped and packed by hand.</p>
+      </div>
+      <div>
+        <h3>Shop</h3>
+        <ul>
+          <li><a href="collection.html">All attars</a></li>
+          <li><a href="collection.html?cat=Unisex">Unisex</a></li>
+          <li><a href="collection.html?cat=Men">Men</a></li>
+          <li><a href="collection.html?cat=Women">Women</a></li>
+        </ul>
+        <h3 style="margin-top:26px">Company</h3>
+        <ul>
+          <li><a href="about.html">About us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Get in touch</h3>
+        <ul>
+          <li><a href="tel:+917982561255">+91 79825 61255</a></li>
+          <li><a href="mailto:info@thearabiandrops.com">info@thearabiandrops.com</a></li>
+          <li><a href="https://wa.me/917982561255" target="_blank" rel="noopener">WhatsApp us</a></li>
+          <li><a href="https://www.google.com/maps/search/?api=1&amp;query=63+UB+Jawahar+Nagar+Kamla+Nagar+Delhi+110007" target="_blank" rel="noopener">63 UB Jawahar Nagar,<br />Kamla Nagar, Delhi 110007</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 Arabian Drops &middot; All rights reserved</span>
+      <span class="footer__pay"><span>Cash on delivery</span><span>UPI</span><span>Cards on request</span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>
