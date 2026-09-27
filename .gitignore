@@ -7,3 +7,5 @@ arabian-drops-deploy.zip
 # Unprocessed source images, re-fetched by tools/prepare-assets.mjs.
 # Keeping them out of git; the optimised derivatives in img/ are tracked.
 raw/
+node_modules/
+
